@@ -179,7 +179,7 @@
 
     <!-- Modals (Add, Edit, Confirm) -->
     <!-- Add/Edit Trainee Modal -->
-    <div class="modal fade" id="traineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="traineeForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="traineeModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المتدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-md-6"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-12"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
+    <div class="modal fade" id="traineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="traineeForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="traineeModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المتدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-md-6"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-12"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div></div><h6 class="form-section-title">تسجيل الكورسات</h6><div id="traineeCoursesChecklist" class="row g-2"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
     <!-- Add/Edit Trainer Modal -->
     <div class="modal fade" id="trainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="trainerForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="trainerModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" name="specialty" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" name="cv_file" class="form-control" accept=".pdf"><small id="currentCv" class="form-text text-muted"></small></div></div><h6 class="form-section-title">تفاصيل التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" name="contract_start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" name="contract_end_date" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
     <!-- Add/Edit Schedule Modal -->
@@ -203,21 +203,13 @@
         // Check for placeholder credentials before initializing
         if (SUPABASE_URL.includes('YOUR_SUPABASE_URL') || SUPABASE_KEY.includes('YOUR_SUPABASE_ANON_KEY')) {
             const mainContent = document.querySelector('main');
-            if (mainContent) {
-                mainContent.style.display = 'none';
-            }
+            if (mainContent) mainContent.style.display = 'none';
             const errorDiv = document.createElement('div');
             errorDiv.className = 'alert alert-danger text-center mt-4';
-            errorDiv.innerHTML = `
-                <h4><i class="fas fa-exclamation-triangle me-2"></i>خطأ في الإعداد!</h4>
-                <p>يرجى فتح ملف <code>index.html</code> وتحديث قيم <code>SUPABASE_URL</code> و <code>SUPABASE_KEY</code> بالبيانات الصحيحة من مشروعك على Supabase.</p>
-                <p>بدون هذه البيانات، لا يمكن للتطبيق الاتصال بقاعدة البيانات.</p>
-            `;
+            errorDiv.innerHTML = `<h4><i class="fas fa-exclamation-triangle me-2"></i>خطأ في الإعداد!</h4><p>يرجى فتح ملف <code>index.html</code> وتحديث قيم <code>SUPABASE_URL</code> و <code>SUPABASE_KEY</code> بالبيانات الصحيحة من مشروعك على Supabase.</p>`;
             document.querySelector('.main-container').appendChild(errorDiv);
-            // Stop the script by throwing an error
-            throw new Error("Supabase credentials are not set. Please update them in index.html.");
+            throw new Error("Supabase credentials are not set.");
         }
-
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -226,7 +218,7 @@
             document.getElementById(containerId).innerHTML = `<div class="loader"><div class="spinner-border text-primary" role="status"></div></div>`;
         };
         
-        let deleteFunction = null; // Store the delete function to be called on confirmation
+        let deleteFunction = null; // Store the delete function
         const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 
@@ -236,12 +228,18 @@
             confirmModal.show();
         }
         confirmDeleteBtn.addEventListener('click', () => {
-            if (deleteFunction) {
-                deleteFunction();
-            }
+            if (deleteFunction) deleteFunction();
             confirmModal.hide();
         });
 
+        const sanitizeData = (data) => {
+            for (const key in data) {
+                if (data[key] === '') {
+                    data[key] = null;
+                }
+            }
+            return data;
+        };
         // ================================================================================
         //                                      TRAINERS
         // ================================================================================
@@ -249,9 +247,7 @@
         async function fetchTrainers(searchTerm = '') {
             showLoader('trainer-results');
             let query = supabaseClient.from('trainers').select('*').order('full_name');
-            if (searchTerm) {
-                query = query.ilike('full_name', `%${searchTerm}%`);
-            }
+            if (searchTerm) query = query.ilike('full_name', `%${searchTerm}%`);
             const { data, error } = await query;
             if (error) {
                 console.error('Error fetching trainers:', error);
@@ -294,15 +290,7 @@
                 
                 Object.keys(data).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
-                    // Don't populate file input for security reasons
-                    if (input && key !== 'cv_file') {
-                        // For date inputs, ensure the format is YYYY-MM-DD
-                        if(input.type === 'date' && data[key]) {
-                            input.value = new Date(data[key]).toISOString().split('T')[0];
-                        } else {
-                            input.value = data[key];
-                        }
-                    }
+                    if (input && key !== 'cv_file') input.value = data[key];
                 });
                 if (data.cv_url) {
                     document.getElementById('currentCv').textContent = `الملف الحالي: ${data.cv_url.split('/').pop()}`;
@@ -323,11 +311,6 @@
             delete trainerData.cv_file;
             delete trainerData.id;
 
-            // Handle empty date fields
-            if(trainerData.dob === '') trainerData.dob = null;
-            if(trainerData.contract_start_date === '') trainerData.contract_start_date = null;
-            if(trainerData.contract_end_date === '') trainerData.contract_end_date = null;
-
             if (cvFile && cvFile.size > 0) {
                  const filePath = `public/${Date.now()}-${cvFile.name}`;
                 const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile);
@@ -336,20 +319,18 @@
                 trainerData.cv_url = urlData.publicUrl;
             }
 
+            const sanitizedData = sanitizeData(trainerData);
             let response;
-            if (id) { // Update
-                response = await supabaseClient.from('trainers').update(trainerData).eq('id', id);
-            } else { // Insert
-                response = await supabaseClient.from('trainers').insert([trainerData]);
+            if (id) {
+                response = await supabaseClient.from('trainers').update(sanitizedData).eq('id', id);
+            } else {
+                response = await supabaseClient.from('trainers').insert([sanitizedData]);
             }
             
             if (response.error) {
-                console.error('Error saving trainer:', response.error);
-                alert('حدث خطأ أثناء حفظ بيانات المدرب.');
+                console.error('Error saving trainer:', response.error); alert('حدث خطأ أثناء حفظ بيانات المدرب.');
             } else {
-                alert('تم حفظ البيانات بنجاح!');
-                trainerModal.hide();
-                fetchTrainers();
+                alert('تم حفظ البيانات بنجاح!'); trainerModal.hide(); fetchTrainers();
             }
         }
         
@@ -367,10 +348,9 @@
         
         async function fetchTrainees(searchTerm = '') {
             showLoader('trainee-results');
-            let query = supabaseClient.from('trainees').select('*').order('full_name');
-            if (searchTerm) {
-                query = query.ilike('full_name', `%${searchTerm}%`);
-            }
+            let query = supabaseClient.from('trainees').select(`*, trainee_enrollments(courses(name))`).order('full_name');
+            if (searchTerm) query = query.ilike('full_name', `%${searchTerm}%`);
+            
             const { data, error } = await query;
             if (error) {
                 console.error('Error fetching trainees:', error);
@@ -385,7 +365,9 @@
             if (!trainees || trainees.length === 0) {
                 container.innerHTML = `<div class="alert alert-info">لا يوجد متدربين بهذه المواصفات.</div>`; return;
             }
-            container.innerHTML = trainees.map(trainee => `
+            container.innerHTML = trainees.map(trainee => {
+                const enrolledCourses = trainee.trainee_enrollments.map(e => e.courses.name).join(', ');
+                return `
                 <div class="result-card mb-3">
                      <div class="card-actions">
                         <button class="btn btn-sm btn-outline-primary" onclick="openTraineeModal(true, '${trainee.id}')"><i class="fas fa-edit"></i></button>
@@ -393,9 +375,9 @@
                     </div>
                     <h5><i class="fas fa-user-graduate me-2"></i>${trainee.full_name}</h5>
                     <p><strong>الهاتف:</strong> ${trainee.phone || 'غير متوفر'}</p>
-                    <p><strong>التحصيل العلمي:</strong> ${trainee.education || 'غير متوفر'}</p>
+                    <p><strong>الكورسات المسجلة:</strong> ${enrolledCourses || 'لا يوجد'}</p>
                 </div>
-            `).join('');
+            `}).join('');
         }
         
         const traineeModal = new bootstrap.Modal(document.getElementById('traineeModal'));
@@ -403,19 +385,35 @@
             const form = document.getElementById('traineeForm');
             form.reset();
             form.querySelector('[name="id"]').value = '';
+            
+            const checklistContainer = document.getElementById('traineeCoursesChecklist');
+            checklistContainer.innerHTML = '<div class="spinner-border spinner-border-sm"></div>';
+            const { data: allCourses, error: coursesError } = await supabaseClient.from('courses').select('id, name');
+
+            if (allCourses) {
+                checklistContainer.innerHTML = allCourses.map(course => `
+                    <div class="col-md-6"><div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="course_ids" value="${course.id}" id="course-${course.id}">
+                        <label class="form-check-label" for="course-${course.id}">${course.name}</label>
+                    </div></div>`).join('');
+            } else {
+                checklistContainer.innerHTML = 'لا توجد كورسات متاحة.';
+            }
+
             if (isEdit) {
                 document.getElementById('traineeModalTitle').textContent = 'تعديل بيانات المتدرب';
-                const { data, error } = await supabaseClient.from('trainees').select('*').eq('id', id).single();
+                const { data, error } = await supabaseClient.from('trainees').select('*, trainee_enrollments(course_id)').eq('id', id).single();
                 if (error) { console.error('Error fetching trainee for edit:', error); return; }
+                
                 Object.keys(data).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
-                    if (input) {
-                         if(input.type === 'date' && data[key]) {
-                            input.value = new Date(data[key]).toISOString().split('T')[0];
-                        } else {
-                            input.value = data[key];
-                        }
-                    }
+                    if (input) input.value = data[key];
+                });
+
+                const enrolledCourseIds = data.trainee_enrollments.map(e => e.course_id);
+                enrolledCourseIds.forEach(courseId => {
+                    const checkbox = form.querySelector(`input[name="course_ids"][value="${courseId}"]`);
+                    if (checkbox) checkbox.checked = true;
                 });
             } else {
                 document.getElementById('traineeModalTitle').textContent = 'إضافة متدرب جديد';
@@ -424,31 +422,49 @@
         }
 
         async function handleTraineeFormSubmit(event) {
-             event.preventDefault();
+            event.preventDefault();
             const form = event.target;
             const formData = new FormData(form);
-            const traineeData = Object.fromEntries(formData.entries());
+            const traineeData = {};
+            const selectedCourses = [];
+            
+            formData.forEach((value, key) => {
+                if (key === 'course_ids') {
+                    selectedCourses.push(value);
+                } else {
+                    traineeData[key] = value;
+                }
+            });
+
             const id = traineeData.id;
             delete traineeData.id;
 
-            if(traineeData.dob === '') traineeData.dob = null;
-
+            const sanitizedData = sanitizeData(traineeData);
             let response;
-            if (id) { // Update
-                response = await supabaseClient.from('trainees').update(traineeData).eq('id', id);
-            } else { // Insert
-                response = await supabaseClient.from('trainees').insert([traineeData]);
+            if (id) {
+                response = await supabaseClient.from('trainees').update(sanitizedData).eq('id', id).select().single();
+            } else {
+                response = await supabaseClient.from('trainees').insert([sanitizedData]).select().single();
             }
             
             if (response.error) {
-                console.error('Error saving trainee:', response.error);
-                alert('حدث خطأ أثناء حفظ بيانات المتدرب.');
-            } else {
-                alert('تم حفظ البيانات بنجاح!');
-                traineeModal.hide();
-                fetchTrainees();
-                fetchSummaryData(); // Update summary
+                console.error('Error saving trainee:', response.error); alert('حدث خطأ أثناء حفظ بيانات المتدرب.'); return;
             }
+
+            const traineeId = response.data.id;
+            const { error: deleteError } = await supabaseClient.from('trainee_enrollments').delete().eq('trainee_id', traineeId);
+            if (deleteError) { console.error('Error clearing old enrollments:', deleteError); }
+
+            if (selectedCourses.length > 0) {
+                const enrollmentsToInsert = selectedCourses.map(courseId => ({ trainee_id: traineeId, course_id: courseId }));
+                const { error: insertError } = await supabaseClient.from('trainee_enrollments').insert(enrollmentsToInsert);
+                if (insertError) { console.error('Error saving enrollments:', insertError); alert('حدث خطأ أثناء تسجيل الكورسات.'); return; }
+            }
+            
+            alert('تم حفظ البيانات بنجاح!');
+            traineeModal.hide();
+            fetchTrainees();
+            fetchSummaryData();
         }
         
         function handleDeleteTrainee(id, name) {
@@ -509,10 +525,7 @@
                     if (input) {
                         if(key === 'german_board_applicants' && Array.isArray(data[key])) {
                             input.value = data[key].join(', ');
-                        } else if(input.type === 'date' && data[key]) {
-                            input.value = new Date(data[key]).toISOString().split('T')[0];
-                        }
-                        else {
+                        } else {
                             input.value = data[key];
                         }
                     }
@@ -527,26 +540,20 @@
             event.preventDefault();
             const form = event.target;
             const formData = new FormData(form);
-            const scheduleData = Object.fromEntries(formData.entries());
+            let scheduleData = Object.fromEntries(formData.entries());
             const id = scheduleData.id;
             delete scheduleData.id;
-            
-            // Handle empty date/time fields by setting them to null
-            if (scheduleData.start_date === '') scheduleData.start_date = null;
-            if (scheduleData.end_date === '') scheduleData.end_date = null;
-            if (scheduleData.start_time === '') scheduleData.start_time = null;
-            if (scheduleData.end_time === '') scheduleData.end_time = null;
-            if (scheduleData.trainee_count === '') scheduleData.trainee_count = null;
             
             if (scheduleData.german_board_applicants) {
                 scheduleData.german_board_applicants = scheduleData.german_board_applicants.split(',').map(s => s.trim());
             } else { scheduleData.german_board_applicants = []; }
 
+            const sanitizedData = sanitizeData(scheduleData);
             let response;
             if(id) {
-                response = await supabaseClient.from('schedules').update(scheduleData).eq('id', id);
+                response = await supabaseClient.from('schedules').update(sanitizedData).eq('id', id);
             } else {
-                response = await supabaseClient.from('schedules').insert([scheduleData]);
+                response = await supabaseClient.from('schedules').insert([sanitizedData]);
             }
             
              if (response.error) {
@@ -641,22 +648,18 @@
 
         // --- Event Listeners & Initial Load ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Initial data fetch
             fetchSummaryData();
             fetchTrainees();
             fetchTrainers();
             fetchSchedules();
 
-            // Search listeners
             document.getElementById('trainee-search-btn').addEventListener('click', () => fetchTrainees(document.getElementById('trainee-search-input').value));
             document.getElementById('trainer-search-btn').addEventListener('click', () => fetchTrainers(document.getElementById('trainer-search-input').value));
             
-            // "Add" buttons listeners
             document.getElementById('addTrainerBtn').addEventListener('click', () => openTrainerModal());
             document.getElementById('addTraineeBtn').addEventListener('click', () => openTraineeModal());
             document.getElementById('addScheduleBtn').addEventListener('click', () => openScheduleModal());
 
-            // Form submission listeners
             document.getElementById('traineeForm').addEventListener('submit', handleTraineeFormSubmit);
             document.getElementById('trainerForm').addEventListener('submit', handleTrainerFormSubmit);
             document.getElementById('scheduleForm').addEventListener('submit', handleScheduleFormSubmit);
