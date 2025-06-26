@@ -45,9 +45,21 @@
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 1rem;
         }
+        .nav-tabs .nav-link {
+             color: var(--text-color);
+            font-weight: 500;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .nav-tabs .nav-link:hover{
+            border-bottom-color: var(--border-color);
+        }
         .nav-tabs .nav-link.active {
             color: var(--primary-color);
             background-color: var(--light-primary);
+            border-color: var(--border-color) var(--border-color) var(--light-primary);
             border-bottom: 3px solid var(--primary-color);
         }
         .panel-header {
@@ -131,7 +143,7 @@
                 <div class="tab-pane fade p-3" id="trainees-panel" role="tabpanel">
                     <div class="panel-header">
                         <h4 class="m-0">قاعدة بيانات المتدربين</h4>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTraineeModal"><i class="fas fa-plus me-2"></i>إضافة متدرب جديد</button>
+                        <button id="addTraineeBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة متدرب جديد</button>
                     </div>
                     <div class="input-group mb-4">
                         <input type="text" class="form-control" id="trainee-search-input" placeholder="أدخل اسم المتدرب للبحث...">
@@ -144,7 +156,7 @@
                 <div class="tab-pane fade p-3" id="trainers-panel" role="tabpanel">
                     <div class="panel-header">
                         <h4 class="m-0">قاعدة بيانات المدربين</h4>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTrainerModal"><i class="fas fa-plus me-2"></i>إضافة مدرب جديد</button>
+                        <button id="addTrainerBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة مدرب جديد</button>
                     </div>
                     <div class="input-group mb-4">
                         <input type="text" class="form-control" id="trainer-search-input" placeholder="أدخل اسم المدرب للبحث...">
@@ -157,7 +169,7 @@
                 <div class="tab-pane fade p-3" id="schedule-panel" role="tabpanel">
                     <div class="panel-header">
                         <h4 class="m-0">جدول مواعيد الكورسات</h4>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addScheduleModal"><i class="fas fa-plus me-2"></i>إضافة موعد جديد</button>
+                        <button id="addScheduleBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة موعد جديد</button>
                     </div>
                     <div id="schedule-results" class="mt-4"></div>
                 </div>
@@ -184,8 +196,8 @@
         // =================================================================================
         // !! هام جداً: قم باستبدال القيم التالية بالبيانات الخاصة بمشروعك على Supabase !!
         // =================================================================================
-        const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; // <-- الصق عنوان URL هنا
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0'; // <-- الصق مفتاح anon public هنا
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // <-- الصق عنوان URL هنا
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // <-- الصق مفتاح anon public هنا
         // =================================================================================
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -284,9 +296,11 @@
             delete trainerData.cv_file;
             delete trainerData.id;
 
-            let cv_url = null;
-            if (cvFile && cvFile.size > 0) {
-                const filePath = `public/${Date.now()}-${cvFile.name}`;
+            // Don't update the cv_url if no new file is uploaded during an edit
+            if (id && (!cvFile || cvFile.size === 0)) {
+                // We need to fetch the old URL and re-assign it, or just not include it in the update
+            } else if (cvFile && cvFile.size > 0) {
+                 const filePath = `public/${Date.now()}-${cvFile.name}`;
                 const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile);
                 if (uploadError) { console.error('Error uploading CV:', uploadError); alert('حدث خطأ أثناء رفع السيرة الذاتية.'); return; }
                 const { data: urlData } = supabaseClient.storage.from('trainer-cvs').getPublicUrl(filePath);
@@ -295,9 +309,9 @@
 
             let response;
             if (id) { // Update
-                response = await supabaseClient.from('trainers').update(trainerData).eq('id', id);
+                response = await supabaseClient.from('trainers').update(trainerData).eq('id', id).select();
             } else { // Insert
-                response = await supabaseClient.from('trainers').insert([trainerData]);
+                response = await supabaseClient.from('trainers').insert([trainerData]).select();
             }
             
             if (response.error) {
@@ -384,9 +398,9 @@
 
             let response;
             if (id) { // Update
-                response = await supabaseClient.from('trainees').update(traineeData).eq('id', id);
+                response = await supabaseClient.from('trainees').update(traineeData).eq('id', id).select();
             } else { // Insert
-                response = await supabaseClient.from('trainees').insert([traineeData]);
+                response = await supabaseClient.from('trainees').insert([traineeData]).select();
             }
             
             if (response.error) {
@@ -434,10 +448,10 @@
                         <button class="btn btn-sm btn-outline-primary" onclick="openScheduleModal(true, '${schedule.id}')"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses.name}')"><i class="fas fa-trash"></i></button>
                     </div>
-                    <h5><i class="fas fa-calendar-check me-2"></i>${schedule.courses.name}</h5>
-                    <p><strong>المدرب:</strong> ${schedule.trainers.full_name}</p>
-                    <p><strong>القاعة:</strong> ${schedule.hall_name}</p>
-                    <p><strong>التاريخ:</strong> من ${schedule.start_date} إلى ${schedule.end_date}</p>
+                    <h5><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'كورس محذوف'}</h5>
+                    <p><strong>المدرب:</strong> ${schedule.trainers ? schedule.trainers.full_name : 'مدرب محذوف'}</p>
+                    <p><strong>القاعة:</strong> ${schedule.hall_name || 'غير محدد'}</p>
+                    <p><strong>التاريخ:</strong> من ${schedule.start_date || '?'} إلى ${schedule.end_date || '?'}</p>
                 </div>
             `).join('');
         }
@@ -483,9 +497,9 @@
 
             let response;
             if(id) {
-                response = await supabaseClient.from('schedules').update(scheduleData).eq('id', id);
+                response = await supabaseClient.from('schedules').update(scheduleData).eq('id', id).select();
             } else {
-                response = await supabaseClient.from('schedules').insert([scheduleData]);
+                response = await supabaseClient.from('schedules').insert([scheduleData]).select();
             }
             
              if (response.error) {
@@ -523,7 +537,7 @@
         async function fetchSummaryData() {
             showLoader('summary-content');
             const { count, error: countError } = await supabaseClient.from('trainees').select('*', { count: 'exact', head: true });
-            const { data: courses, error: coursesError } = await supabaseClient.from('courses').select('*');
+            const { data: courses, error: coursesError } = await supabaseClient.from('courses').select('*').order('name');
 
             if(countError || coursesError) {
                  console.error('Error fetching summary:', countError || coursesError);
@@ -533,7 +547,7 @@
             
             document.getElementById('summary-content').innerHTML = `
                 <div class="col-lg-5 mb-4">
-                    <div class="card text-center h-100 summary-card">
+                    <div class="card text-center h-100 shadow-sm">
                         <div class="card-body p-4 d-flex flex-column justify-content-center">
                             <i class="fas fa-users fa-3x text-primary mb-3"></i>
                             <h5 class="card-title h4">إجمالي الطلاب المسجلين</h5>
@@ -542,7 +556,7 @@
                     </div>
                 </div>
                 <div class="col-lg-7 mb-4">
-                     <div class="card h-100 summary-card">
+                     <div class="card h-100 shadow-sm">
                         <div class="card-body p-4">
                             <h5 class="card-title h4 text-center">إدارة الكورسات</h5>
                              <form id="addCourseForm" class="d-flex mt-3 mb-3">
@@ -585,13 +599,16 @@
             fetchTrainers();
             fetchSchedules();
 
+            // Search listeners
             document.getElementById('trainee-search-btn').addEventListener('click', () => fetchTrainees(document.getElementById('trainee-search-input').value));
             document.getElementById('trainer-search-btn').addEventListener('click', () => fetchTrainers(document.getElementById('trainer-search-input').value));
             
-            document.getElementById('addTrainerModalBtn').addEventListener('click', () => openTrainerModal());
-            document.getElementById('addTraineeModalBtn').addEventListener('click', () => openTraineeModal());
-            document.getElementById('addScheduleModalBtn').addEventListener('click', () => openScheduleModal());
+            // "Add" buttons listeners
+            document.getElementById('addTrainerBtn').addEventListener('click', () => openTrainerModal());
+            document.getElementById('addTraineeBtn').addEventListener('click', () => openTraineeModal());
+            document.getElementById('addScheduleBtn').addEventListener('click', () => openScheduleModal());
 
+            // Form submission listeners
             document.getElementById('traineeForm').addEventListener('submit', handleTraineeFormSubmit);
             document.getElementById('trainerForm').addEventListener('submit', handleTrainerFormSubmit);
             document.getElementById('scheduleForm').addEventListener('submit', handleScheduleFormSubmit);
