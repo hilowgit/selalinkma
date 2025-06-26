@@ -208,7 +208,7 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0';
         // =================================================================================
         
-        if (SUPABASE_URL.includes('YOUR_SUPABASE_URL') || SUPABASE_KEY.includes('YOUR_SUPABASE_ANON_KEY')) {
+        if (SUPABASE_URL.includes('https://jgvibxicmylwvmeubkdc.supabase.co') || SUPABASE_KEY.includes('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0')) {
             document.body.innerHTML = `<div class="container mt-5"><div class="alert alert-danger text-center"><h4>خطأ في الإعداد!</h4><p>يرجى فتح ملف <code>index.html</code> وتحديث قيم <code>SUPABASE_URL</code> و <code>SUPABASE_KEY</code> بالبيانات الصحيحة من مشروعك على Supabase.</p></div></div>`;
             throw new Error("Supabase credentials are not set.");
         }
