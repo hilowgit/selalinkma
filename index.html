@@ -196,11 +196,11 @@
         // =================================================================================
         // !! هام جداً: قم باستبدال القيم التالية بالبيانات الخاصة بمشروعك على Supabase !!
         // =================================================================================
-        const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; // <-- الصق عنوان URL هنا
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0'; // <-- الصق مفتاح anon public هنا
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // <-- الصق عنوان URL هنا
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // <-- الصق مفتاح anon public هنا
         // =================================================================================
         
-        // FIX: Check for placeholder credentials before initializing
+        // Check for placeholder credentials before initializing
         if (SUPABASE_URL.includes('YOUR_SUPABASE_URL') || SUPABASE_KEY.includes('YOUR_SUPABASE_ANON_KEY')) {
             const mainContent = document.querySelector('main');
             if (mainContent) {
@@ -294,7 +294,15 @@
                 
                 Object.keys(data).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
-                    if (input && key !== 'cv_file') input.value = data[key];
+                    // Don't populate file input for security reasons
+                    if (input && key !== 'cv_file') {
+                        // For date inputs, ensure the format is YYYY-MM-DD
+                        if(input.type === 'date' && data[key]) {
+                            input.value = new Date(data[key]).toISOString().split('T')[0];
+                        } else {
+                            input.value = data[key];
+                        }
+                    }
                 });
                 if (data.cv_url) {
                     document.getElementById('currentCv').textContent = `الملف الحالي: ${data.cv_url.split('/').pop()}`;
@@ -315,6 +323,11 @@
             delete trainerData.cv_file;
             delete trainerData.id;
 
+            // Handle empty date fields
+            if(trainerData.dob === '') trainerData.dob = null;
+            if(trainerData.contract_start_date === '') trainerData.contract_start_date = null;
+            if(trainerData.contract_end_date === '') trainerData.contract_end_date = null;
+
             if (cvFile && cvFile.size > 0) {
                  const filePath = `public/${Date.now()}-${cvFile.name}`;
                 const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile);
@@ -325,9 +338,9 @@
 
             let response;
             if (id) { // Update
-                response = await supabaseClient.from('trainers').update(trainerData).eq('id', id).select();
+                response = await supabaseClient.from('trainers').update(trainerData).eq('id', id);
             } else { // Insert
-                response = await supabaseClient.from('trainers').insert([trainerData]).select();
+                response = await supabaseClient.from('trainers').insert([trainerData]);
             }
             
             if (response.error) {
@@ -396,7 +409,13 @@
                 if (error) { console.error('Error fetching trainee for edit:', error); return; }
                 Object.keys(data).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
-                    if (input) input.value = data[key];
+                    if (input) {
+                         if(input.type === 'date' && data[key]) {
+                            input.value = new Date(data[key]).toISOString().split('T')[0];
+                        } else {
+                            input.value = data[key];
+                        }
+                    }
                 });
             } else {
                 document.getElementById('traineeModalTitle').textContent = 'إضافة متدرب جديد';
@@ -411,6 +430,8 @@
             const traineeData = Object.fromEntries(formData.entries());
             const id = traineeData.id;
             delete traineeData.id;
+
+            if(traineeData.dob === '') traineeData.dob = null;
 
             let response;
             if (id) { // Update
@@ -488,7 +509,10 @@
                     if (input) {
                         if(key === 'german_board_applicants' && Array.isArray(data[key])) {
                             input.value = data[key].join(', ');
-                        } else {
+                        } else if(input.type === 'date' && data[key]) {
+                            input.value = new Date(data[key]).toISOString().split('T')[0];
+                        }
+                        else {
                             input.value = data[key];
                         }
                     }
@@ -506,6 +530,13 @@
             const scheduleData = Object.fromEntries(formData.entries());
             const id = scheduleData.id;
             delete scheduleData.id;
+            
+            // Handle empty date/time fields by setting them to null
+            if (scheduleData.start_date === '') scheduleData.start_date = null;
+            if (scheduleData.end_date === '') scheduleData.end_date = null;
+            if (scheduleData.start_time === '') scheduleData.start_time = null;
+            if (scheduleData.end_time === '') scheduleData.end_time = null;
+            if (scheduleData.trainee_count === '') scheduleData.trainee_count = null;
             
             if (scheduleData.german_board_applicants) {
                 scheduleData.german_board_applicants = scheduleData.german_board_applicants.split(',').map(s => s.trim());
