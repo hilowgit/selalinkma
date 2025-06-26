@@ -222,7 +222,8 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0'; // <-- الصق مفتاح anon public هنا
         // =================================================================================
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // FIX: Use a different variable name for the client to avoid shadowing the global `supabase` object.
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- Utility Functions ---
         const showLoader = (containerId) => {
@@ -232,7 +233,7 @@
         // --- Trainers ---
         async function fetchTrainers(searchTerm = '') {
             showLoader('trainer-results');
-            let query = supabase.from('trainers').select('*').order('full_name');
+            let query = supabaseClient.from('trainers').select('*').order('full_name');
             if (searchTerm) {
                 query = query.ilike('full_name', `%${searchTerm}%`);
             }
@@ -272,18 +273,18 @@
             let cv_url = null;
             if (cvFile && cvFile.size > 0) {
                 const filePath = `public/${Date.now()}-${cvFile.name}`;
-                const { error: uploadError } = await supabase.storage.from('trainer-cvs').upload(filePath, cvFile);
+                const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile);
                 if (uploadError) {
                     console.error('Error uploading CV:', uploadError);
                     alert('حدث خطأ أثناء رفع السيرة الذاتية.');
                     return;
                 }
-                const { data: urlData } = supabase.storage.from('trainer-cvs').getPublicUrl(filePath);
+                const { data: urlData } = supabaseClient.storage.from('trainer-cvs').getPublicUrl(filePath);
                 cv_url = urlData.publicUrl;
             }
             trainerData.cv_url = cv_url;
 
-            const { error } = await supabase.from('trainers').insert([trainerData]);
+            const { error } = await supabaseClient.from('trainers').insert([trainerData]);
             if (error) {
                 console.error('Error adding trainer:', error);
                 alert('حدث خطأ أثناء إضافة المدرب.');
@@ -298,7 +299,7 @@
         // --- Trainees ---
         async function fetchTrainees(searchTerm = '') {
             showLoader('trainee-results');
-            let query = supabase.from('trainees').select('*').order('full_name');
+            let query = supabaseClient.from('trainees').select('*').order('full_name');
             if (searchTerm) {
                 query = query.ilike('full_name', `%${searchTerm}%`);
             }
@@ -332,7 +333,7 @@
             const formData = new FormData(form);
             const traineeData = Object.fromEntries(formData.entries());
 
-            const { error } = await supabase.from('trainees').insert([traineeData]);
+            const { error } = await supabaseClient.from('trainees').insert([traineeData]);
             if (error) {
                 console.error('Error adding trainee:', error);
                 alert('حدث خطأ أثناء إضافة المتدرب.');
@@ -348,7 +349,7 @@
         // --- Schedules ---
         async function fetchSchedules() {
             showLoader('schedule-results');
-            const { data, error } = await supabase.from('schedules').select(`
+            const { data, error } = await supabaseClient.from('schedules').select(`
                 *,
                 courses ( name ),
                 trainers ( full_name )
@@ -392,7 +393,7 @@
                 scheduleData.german_board_applicants = [];
             }
 
-            const { error } = await supabase.from('schedules').insert([scheduleData]);
+            const { error } = await supabaseClient.from('schedules').insert([scheduleData]);
 
              if (error) {
                 console.error('Error adding schedule:', error);
@@ -407,8 +408,8 @@
 
         // Populate selects in add schedule modal
         async function populateScheduleModalSelects() {
-            const { data: courses, error: coursesError } = await supabase.from('courses').select('id, name');
-            const { data: trainers, error: trainersError } = await supabase.from('trainers').select('id, full_name');
+            const { data: courses, error: coursesError } = await supabaseClient.from('courses').select('id, name');
+            const { data: trainers, error: trainersError } = await supabaseClient.from('trainers').select('id, full_name');
 
             if (courses) {
                 const courseSelect = document.getElementById('course-select-in-modal');
@@ -423,7 +424,7 @@
         // --- Summary ---
         async function fetchSummaryData() {
             showLoader('summary-content');
-            const { count, error } = await supabase.from('trainees').select('*', { count: 'exact', head: true });
+            const { count, error } = await supabaseClient.from('trainees').select('*', { count: 'exact', head: true });
 
             if(error) {
                  console.error('Error fetching summary:', error);
@@ -465,7 +466,7 @@
             const formData = new FormData(form);
             const courseName = formData.get('name');
 
-            const { error } = await supabase.from('courses').insert([{ name: courseName, category: 'عام' }]);
+            const { error } = await supabaseClient.from('courses').insert([{ name: courseName, category: 'عام' }]);
             if (error) {
                 console.error('Error adding course:', error);
                 alert(`خطأ: ${error.message}`);
