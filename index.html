@@ -196,9 +196,28 @@
         // =================================================================================
         // !! هام جداً: قم باستبدال القيم التالية بالبيانات الخاصة بمشروعك على Supabase !!
         // =================================================================================
-        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // <-- الصق عنوان URL هنا
-        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY'; // <-- الصق مفتاح anon public هنا
+        const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; // <-- الصق عنوان URL هنا
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0'; // <-- الصق مفتاح anon public هنا
         // =================================================================================
+        
+        // FIX: Check for placeholder credentials before initializing
+        if (SUPABASE_URL.includes('YOUR_SUPABASE_URL') || SUPABASE_KEY.includes('YOUR_SUPABASE_ANON_KEY')) {
+            const mainContent = document.querySelector('main');
+            if (mainContent) {
+                mainContent.style.display = 'none';
+            }
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger text-center mt-4';
+            errorDiv.innerHTML = `
+                <h4><i class="fas fa-exclamation-triangle me-2"></i>خطأ في الإعداد!</h4>
+                <p>يرجى فتح ملف <code>index.html</code> وتحديث قيم <code>SUPABASE_URL</code> و <code>SUPABASE_KEY</code> بالبيانات الصحيحة من مشروعك على Supabase.</p>
+                <p>بدون هذه البيانات، لا يمكن للتطبيق الاتصال بقاعدة البيانات.</p>
+            `;
+            document.querySelector('.main-container').appendChild(errorDiv);
+            // Stop the script by throwing an error
+            throw new Error("Supabase credentials are not set. Please update them in index.html.");
+        }
+
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -275,7 +294,7 @@
                 
                 Object.keys(data).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
-                    if (input) input.value = data[key];
+                    if (input && key !== 'cv_file') input.value = data[key];
                 });
                 if (data.cv_url) {
                     document.getElementById('currentCv').textContent = `الملف الحالي: ${data.cv_url.split('/').pop()}`;
@@ -296,10 +315,7 @@
             delete trainerData.cv_file;
             delete trainerData.id;
 
-            // Don't update the cv_url if no new file is uploaded during an edit
-            if (id && (!cvFile || cvFile.size === 0)) {
-                // We need to fetch the old URL and re-assign it, or just not include it in the update
-            } else if (cvFile && cvFile.size > 0) {
+            if (cvFile && cvFile.size > 0) {
                  const filePath = `public/${Date.now()}-${cvFile.name}`;
                 const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile);
                 if (uploadError) { console.error('Error uploading CV:', uploadError); alert('حدث خطأ أثناء رفع السيرة الذاتية.'); return; }
@@ -398,9 +414,9 @@
 
             let response;
             if (id) { // Update
-                response = await supabaseClient.from('trainees').update(traineeData).eq('id', id).select();
+                response = await supabaseClient.from('trainees').update(traineeData).eq('id', id);
             } else { // Insert
-                response = await supabaseClient.from('trainees').insert([traineeData]).select();
+                response = await supabaseClient.from('trainees').insert([traineeData]);
             }
             
             if (response.error) {
@@ -446,7 +462,7 @@
                 <div class="result-card mb-3">
                     <div class="card-actions">
                         <button class="btn btn-sm btn-outline-primary" onclick="openScheduleModal(true, '${schedule.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses.name}')"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : 'كورس'}')"><i class="fas fa-trash"></i></button>
                     </div>
                     <h5><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'كورس محذوف'}</h5>
                     <p><strong>المدرب:</strong> ${schedule.trainers ? schedule.trainers.full_name : 'مدرب محذوف'}</p>
@@ -497,9 +513,9 @@
 
             let response;
             if(id) {
-                response = await supabaseClient.from('schedules').update(scheduleData).eq('id', id).select();
+                response = await supabaseClient.from('schedules').update(scheduleData).eq('id', id);
             } else {
-                response = await supabaseClient.from('schedules').insert([scheduleData]).select();
+                response = await supabaseClient.from('schedules').insert([scheduleData]);
             }
             
              if (response.error) {
@@ -594,6 +610,7 @@
 
         // --- Event Listeners & Initial Load ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Initial data fetch
             fetchSummaryData();
             fetchTrainees();
             fetchTrainers();
