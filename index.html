@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة مركز صلة التدريبي الدولي - لوحة تحكم المشرفين</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Google Fonts for Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --light-primary: #f0f5ff;
+            --background-color: #f4f7fc;
+            --card-bg: #ffffff;
+            --text-color: #4a5568;
+            --heading-color: #2d3748;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .main-container {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .app-header {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 1rem;
+        }
+        .app-header h1 {
+            color: var(--heading-color);
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .nav-tabs .nav-link:hover {
+            border-bottom-color: var(--border-color);
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: var(--light-primary);
+            border-color: var(--border-color) var(--border-color) var(--light-primary);
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .panel-header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .panel-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+        
+        .summary-card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .result-card {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            background-color: #fcfdff;
+        }
+        .result-card h5 {
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.25rem;
+            font-weight: 700;
+        }
+        .result-card p {
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+        .result-card strong {
+            min-width: 140px;
+            display: inline-block;
+            color: var(--heading-color);
+        }
+        .result-card ul {
+            padding-right: 20px;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            text-align: center;
+        }
+        .calendar-day {
+            padding: 0.75rem 0.25rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .calendar-header {
+            font-weight: bold;
+            background-color: #f7fafc;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .day-with-event {
+            background-color: var(--light-primary);
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid var(--primary-color);
+            position: relative;
+        }
+        .day-with-event:hover {
+            background-color: #d1e7fd;
+            transform: scale(1.05);
+        }
+
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .modal-header .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+        .form-section-title {
+            font-weight: bold;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container main-container">
+        <header class="text-center mb-4 app-header">
+            <h1 class="display-5 fw-bold">لوحة تحكم المشرفين</h1>
+            <p class="h5 text-muted">مركز صلة التدريبي الدولي</p>
+        </header>
+
+        <main>
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary-panel" type="button" role="tab"><i class="fas fa-chart-line me-2"></i>الملخصات</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="trainees-tab" data-bs-toggle="tab" data-bs-target="#trainees-panel" type="button" role="tab"><i class="fas fa-user-graduate me-2"></i>المتدربين</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="trainers-tab" data-bs-toggle="tab" data-bs-target="#trainers-panel" type="button" role="tab"><i class="fas fa-chalkboard-teacher me-2"></i>المدربين</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-panel" type="button" role="tab"><i class="fas fa-calendar-alt me-2"></i>الجدولة</button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content pt-4" id="myTabContent">
+                
+                <!-- Summary Panel -->
+                <div class="tab-pane fade show active p-3" id="summary-panel" role="tabpanel">
+                    <h4 class="mb-4">ملخص الأداء العام</h4>
+                    <div class="row">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card text-center h-100 summary-card">
+                                <div class="card-body p-4 d-flex flex-column justify-content-center">
+                                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title h4">إجمالي الطلاب المسجلين</h5>
+                                    <p class="display-4 fw-bold m-0">158</p>
+                                </div>
+                                <div class="card-footer text-muted">آخر تحديث: اليوم</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card h-100 summary-card">
+                                <div class="card-body p-4">
+                                    <div class="text-center">
+                                        <i class="fas fa-fire-alt fa-3x text-danger mb-3"></i>
+                                        <h5 class="card-title h4">أكثر الكورسات طلباً</h5>
+                                    </div>
+                                    <ul class="list-group list-group-flush mt-3">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">التسويق الرقمي المتقدم <span class="badge bg-primary rounded-pill fs-6">45</span></li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">تحليل البيانات بـ Python <span class="badge bg-primary rounded-pill fs-6">38</span></li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">إدارة المشاريع PMP <span class="badge bg-primary rounded-pill fs-6">32</span></li>
+                                    </ul>
+                                </div>
+                                <div class="card-footer text-muted">بيانات هذا الشهر</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trainees Panel -->
+                <div class="tab-pane fade p-3" id="trainees-panel" role="tabpanel">
+                    <div class="panel-header">
+                        <h4 class="m-0">قاعدة بيانات المتدربين</h4>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTraineeModal"><i class="fas fa-plus me-2"></i>إضافة متدرب جديد</button>
+                    </div>
+                    <div class="input-group mb-4">
+                        <input type="text" class="form-control" id="trainee-search-input" placeholder="أدخل اسم المتدرب للبحث (جرب: علي أحمد خالد)...">
+                        <button class="btn btn-outline-primary" type="button" id="trainee-search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div id="trainee-results" class="mt-4"></div>
+                </div>
+
+                <!-- Trainers Panel -->
+                <div class="tab-pane fade p-3" id="trainers-panel" role="tabpanel">
+                    <div class="panel-header">
+                        <h4 class="m-0">قاعدة بيانات المدربين</h4>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTrainerModal"><i class="fas fa-plus me-2"></i>إضافة مدرب جديد</button>
+                    </div>
+                    <div class="input-group mb-4">
+                        <input type="text" class="form-control" id="trainer-search-input" placeholder="أدخل اسم المدرب للبحث (جرب: نور الشام محمد)...">
+                        <button class="btn btn-outline-primary" type="button" id="trainer-search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div id="trainer-results" class="mt-4"></div>
+                </div>
+
+                <!-- Schedule Panel -->
+                <div class="tab-pane fade p-3" id="schedule-panel" role="tabpanel">
+                    <div class="panel-header">
+                        <h4 class="m-0">جدول مواعيد الكورسات (يونيو 2025)</h4>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addScheduleModal"><i class="fas fa-plus me-2"></i>إضافة موعد جديد</button>
+                    </div>
+                    <p class="text-center text-muted">اختر يوماً من التقويم لعرض تفاصيل الكورسات المجدولة فيه.</p>
+                    <div class="calendar mt-4">
+                        <div class="calendar-header">الأحد</div><div class="calendar-header">الإثنين</div><div class="calendar-header">الثلاثاء</div><div class="calendar-header">الأربعاء</div><div class="calendar-header">الخميس</div><div class="calendar-header">الجمعة</div><div class="calendar-header">السبت</div>
+                        <script>
+                            for (let i = 1; i <= 30; i++) {
+                                let dayClass = 'calendar-day'; let dayId = '';
+                                if (i === 15) { dayClass += ' day-with-event'; dayId = 'id="day-15"'; }
+                                document.write(`<div class="${dayClass}" ${dayId}>${i}</div>`);
+                            }
+                        </script>
+                    </div>
+                    <div id="schedule-details" class="mt-4"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="addTraineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">إضافة متدرب جديد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="addTraineeForm"><h6 class="form-section-title">بيانات المتدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">السكن</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" class="form-control"></div><div class="col-12"><label class="form-label">التحصيل العلمي</label><input type="text" class="form-control"></div></div><h6 class="form-section-title">تفاصيل الكورس</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">اسم الكورس</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ التسجيل</label><input type="date" class="form-control"></div><div class="col-md-6"><label class="form-label">السعر قبل الحسم</label><input type="number" class="form-control"></div><div class="col-md-6"><label class="form-label">السعر بعد الحسم</label><input type="number" class="form-control"></div></div><h6 class="form-section-title">معلومات إضافية</h6><div class="mb-3"><label class="form-label">الدفعات</label><textarea class="form-control" rows="2"></textarea></div><div class="mb-3"><label class="form-label">الحسومات</label><textarea class="form-control" rows="2"></textarea></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="button" class="btn btn-primary" onclick="alert('تمت محاكاة حفظ بيانات المتدرب.')" data-bs-dismiss="modal">حفظ البيانات</button></div></div></div></div>
+    <div class="modal fade" id="addTrainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">إضافة مدرب جديد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="addTrainerForm"><h6 class="form-section-title">بيانات المدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" class="form-control" id="trainerCv" accept=".pdf"></div></div><h6 class="form-section-title">تفاصيل التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" class="form-control"></div><div class="col-12"><label class="form-label">الكورسات التي سيدربها</label><input type="text" class="form-control"></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="button" class="btn btn-primary" onclick="alert('تمت محاكاة حفظ بيانات المدرب.')" data-bs-dismiss="modal">حفظ البيانات</button></div></div></div></div>
+    <div class="modal fade" id="addScheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">إضافة موعد جديد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="addScheduleForm"><div class="row g-3"><div class="col-md-6"><label class="form-label">اسم الكورس</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">اسم المدرب</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">اسم القاعة</label><select class="form-select"><option>قاعة المستقبل (A1)</option><option>قاعة الإبداع (B2)</option></select></div><div class="col-md-6"><label class="form-label">تصنيف الكورس</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ البدء</label><input type="date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ الانتهاء</label><input type="date" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت البدء</label><input type="time" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت الانتهاء</label><input type="time" class="form-control"></div><div class="col-md-6"><label class="form-label">أيام الكورس</label><input type="text" class="form-control"></div><div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" class="form-control"></div><div class="col-12"><label class="form-label">متقدمون للبورد الألماني</label><textarea class="form-control" rows="2"></textarea></div><div class="col-12"><label class="form-label">خطة المسار</label><textarea class="form-control" rows="3"></textarea></div><div class="col-12"><label class="form-label">المواد المطلوبة</label><textarea class="form-control" rows="2"></textarea></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="button" class="btn btn-primary" onclick="alert('تمت محاكاة حفظ بيانات الموعد.')" data-bs-dismiss="modal">حفظ البيانات</button></div></div></div></div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <script>
+        // --- DATA SIMULATION ---
+        const sampleTrainee = { fullName: 'علي أحمد خالد', id: 'TR-1025', address: 'بغداد - المنصور', nationalId: '1995010112345', dob: '01-01-1995', motherName: 'فاطمة حسن', education: 'بكالوريوس هندسة حاسوب', courses: [ { name: 'التسويق الرقمي المتقدم', status: 'حالي', date: '10-06-2025', priceBefore: 300, priceAfter: 250 }, { name: 'إدارة المشاريع PMP', status: 'سابق', date: '15-02-2025', priceBefore: 400, priceAfter: 400 } ], payments: 'لا يوجد دفعات مستحقة. جميع الكورسات مدفوعة بالكامل.', discounts: 'نعم، استفاد من حسم التسجيل المبكر لكورس التسويق الرقمي.', attendedCourses: ['إدارة المشاريع PMP', 'مقدمة في الذكاء الاصطناعي'], certificates: [ { name: 'شهادة PMP', status: 'تم الحصول عليها', reason: '' }, { name: 'شهادة مقدمة في الذكاء الاصطناعي', status: 'لم يحصل عليها', reason: 'عدم اجتياز الاختبار النهائي.' } ], events: ['ورشة عمل: بناء العلامة التجارية الشخصية', 'إفينت: مستقبل التكنولوجيا في العراق'] };
+        const sampleTrainer = { fullName: 'نور الشام محمد', phone: '07701234567', address: 'أربيل - عينكاوة', nationalId: '1988121098765', dob: '10-12-1988', motherName: 'سارة عبد الله', education: 'ماجستير في علوم البيانات', cvFileName: 'Noor_Alsham_CV.pdf', contractStart: '01-01-2024', contractEnd: '31-12-2025', sameSpecialty: 'نعم، يوجد مدرب آخر (أحمد ياسين) متخصص في نفس المجال (تحليل البيانات).', courses: [ { name: 'تحليل البيانات باستخدام Python', hours: 40 }, { name: 'الذكاء الاصطناعي للشركات', hours: 35 } ], coursesGivenCount: 5, coursesHistory: ['15-02-2024', '10-05-2024', '01-09-2024', '20-01-2025', '10-06-2025'], earnings: '15,000,000 دينار عراقي', contractStatus: 'العقد ساري المفعول.', contractTerminationReason: 'لا يوجد' };
+        const sampleSchedule = { hallName: 'قاعة المستقبل (A1)', category: 'قسم تكنولوجيا المعلومات', time: 'من 05:00 مساءً إلى 08:00 مساءً', dateRange: 'من 15-06-2025 إلى 15-07-2025', days: 'الأحد - الثلاثاء - الخميس', traineeCount: 18, germanBoardApplicants: ['علي أحمد خالد', 'سارة وليد', 'محمد كريم'], trainerAbsence: { occurred: false, reason: '' }, traineeAbsence: { occurred: true, reason: 'تم اعتذار متدرب واحد (أحمد سالم) عن محاضرة يوم 17-06-2025 بسبب ظرف طارئ.' }, coursePlan: 'الأسبوع الأول: مقدمة وبنى البيانات. الأسبوع الثاني: التحليل الاستكشافي. الأسبوع الثالث: بناء النماذج. الأسبوع الرابع: مشروع التخرج.', requiredMaterials: 'جهاز عرض (Data Show)، لوح أبيض (Whiteboard)، اتصال انترنت عالي السرعة.' };
+
+        // --- APPLICATION LOGIC ---
+        function showTraineeResults() {
+            const query = document.getElementById('trainee-search-input').value.trim();
+            const resultsContainer = document.getElementById('trainee-results');
+            if (query.includes('علي أحمد')) {
+                let coursesHtml = sampleTrainee.courses.map(c => `<li>${c.name} (<strong>الحالة:</strong> ${c.status}) - <strong>تاريخ:</strong> ${c.date}</li><ul class="list-unstyled ps-4"><li><strong>السعر قبل الحسم:</strong> ${c.priceBefore}$</li><li><strong>بعد الحسم:</strong> ${c.priceAfter}$</li></ul>`).join('');
+                let certificatesHtml = sampleTrainee.certificates.map(c => `<li>${c.name} - <strong>الحالة:</strong> ${c.status} ${c.reason ? `<span class="text-danger">(${c.reason})</span>` : ''}</li>`).join('');
+                resultsContainer.innerHTML = `<div class="result-card"><h5><i class="fas fa-id-card me-2"></i>بيانات المتدرب</h5><p><strong>الأسم:</strong> ${sampleTrainee.fullName}</p><p><strong>الرقم التعريفي:</strong> ${sampleTrainee.id}</p><p><strong>السكن:</strong> ${sampleTrainee.address}</p><p><strong>الرقم الوطني:</strong> ${sampleTrainee.nationalId}</p><p><strong>التولد:</strong> ${sampleTrainee.dob}</p><p><strong>أسم الأم:</strong> ${sampleTrainee.motherName}</p><p><strong>التحصيل:</strong> ${sampleTrainee.education}</p><h5 class="mt-4"><i class="fas fa-book-open me-2"></i>الكورسات المسجلة</h5><ul>${coursesHtml}</ul><h5 class="mt-4"><i class="fas fa-dollar-sign me-2"></i>الدفعات</h5><p>${sampleTrainee.payments}</p><h5 class="mt-4"><i class="fas fa-tags me-2"></i>الحسومات</h5><p>${sampleTrainee.discounts}</p><h5 class="mt-4"><i class="fas fa-check-circle me-2"></i>الحضور</h5><p>${sampleTrainee.attendedCourses.join(' / ')}</p><h5 class="mt-4"><i class="fas fa-certificate me-2"></i>الشهادات</h5><ul>${certificatesHtml}</ul><h5 class="mt-4"><i class="fas fa-calendar-check me-2"></i>الورشات</h5><p>${sampleTrainee.events.join(' / ')}</p></div>`;
+            } else { resultsContainer.innerHTML = `<div class="alert alert-warning">لم يتم العثور على متدرب بهذا الاسم.</div>`; }
+        }
+
+        function showTrainerResults() {
+            const query = document.getElementById('trainer-search-input').value.trim();
+            const resultsContainer = document.getElementById('trainer-results');
+            if (query.includes('نور الشام')) {
+                let coursesHtml = sampleTrainer.courses.map(c => `<li>${c.name} - <strong>الساعات:</strong> ${c.hours}</li>`).join('');
+                resultsContainer.innerHTML = `<div class="result-card"><h5><i class="fas fa-user-tie me-2"></i>بيانات المدرب</h5>
+                <p><strong>الأسم:</strong> ${sampleTrainer.fullName}</p><p><strong>الهاتف:</strong> ${sampleTrainer.phone}</p>
+                <p><strong>السكن:</strong> ${sampleTrainer.address}</p><p><strong>الرقم الوطني:</strong> ${sampleTrainer.nationalId}</p>
+                <p><strong>التولد:</strong> ${sampleTrainer.dob}</p><p><strong>أسم الأم:</strong> ${sampleTrainer.motherName}</p>
+                <p><strong>التحصيل:</strong> ${sampleTrainer.education}</p>
+                <p><strong>السيرة الذاتية:</strong> ${sampleTrainer.cvFileName ? `<a href="#" onclick="alert('سيتم فتح ملف ${sampleTrainer.cvFileName}')" class="text-decoration-none">${sampleTrainer.cvFileName} <i class="fas fa-download ms-1"></i></a>` : 'لم يتم الرفع'}</p>
+                <h5 class="mt-4"><i class="fas fa-file-signature me-2"></i>تفاصيل العقد</h5>
+                <p><strong>تاريخ التعاقد:</strong> ${sampleTrainer.contractStart}</p><p><strong>انتهاء العقد:</strong> ${sampleTrainer.contractEnd}</p>
+                <p><strong>حالة العقد:</strong> ${sampleTrainer.contractStatus}</p><p><strong>فسخ العقد:</strong> ${sampleTrainer.contractTerminationReason}</p>
+                <h5 class="mt-4"><i class="fas fa-laptop-code me-2"></i>الكورسات</h5><ul>${coursesHtml}</ul>
+                <h5 class="mt-4"><i class="fas fa-history me-2"></i>سجل الكورسات</h5><p><strong>العدد:</strong> ${sampleTrainer.coursesGivenCount}</p><p><strong>التواريخ:</strong> ${sampleTrainer.coursesHistory.join(' / ')}</p>
+                <h5 class="mt-4"><i class="fas fa-money-bill-wave me-2"></i>الأجور</h5><p>${sampleTrainer.earnings}</p>
+                <h5 class="mt-4"><i class="fas fa-users me-2"></i>مدربون بنفس الاختصاص</h5><p>${sampleTrainer.sameSpecialty}</p></div>`;
+            } else { resultsContainer.innerHTML = `<div class="alert alert-warning">لم يتم العثور على مدرب بهذا الاسم.</div>`; }
+        }
+
+        function showScheduleDetails() {
+            const detailsContainer = document.getElementById('schedule-details');
+            detailsContainer.innerHTML = `<div class="result-card"><h4>تفاصيل الكورس (15 يونيو)</h4>
+            <p><strong>القاعة:</strong> ${sampleSchedule.hallName}</p><p><strong>التصنيف:</strong> ${sampleSchedule.category}</p>
+            <p><strong>الوقت:</strong> ${sampleSchedule.time}</p><p><strong>التاريخ:</strong> ${sampleSchedule.dateRange}</p>
+            <p><strong>الأيام:</strong> ${sampleSchedule.days}</p><p><strong>عدد المتدربين:</strong> ${sampleSchedule.traineeCount}</p>
+            <p><strong>متقدمو البورد:</strong> ${sampleSchedule.germanBoardApplicants.join('، ')}</p>
+            <p><strong>اعتذار المدرب:</strong> ${sampleSchedule.trainerAbsence.occurred ? sampleSchedule.trainerAbsence.reason : 'لا يوجد.'}</p>
+            <p><strong>اعتذار متدرب:</strong> ${sampleSchedule.traineeAbsence.occurred ? sampleSchedule.traineeAbsence.reason : 'لا يوجد.'}</p>
+            <p><strong>خطة المسار:</strong> ${sampleSchedule.coursePlan}</p><p><strong>المواد المطلوبة:</strong> ${sampleSchedule.requiredMaterials}</p></div>`;
+        }
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('trainee-search-btn').addEventListener('click', showTraineeResults);
+        document.getElementById('trainee-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') showTraineeResults(); });
+        document.getElementById('trainer-search-btn').addEventListener('click', showTrainerResults);
+        document.getElementById('trainer-search-input').addEventListener('keypress', e => { if (e.key === 'Enter') showTrainerResults(); });
+        document.addEventListener('DOMContentLoaded', () => {
+            const day15Element = document.getElementById('day-15');
+            if(day15Element) day15Element.addEventListener('click', showScheduleDetails);
+        });
+    </script>
+</body>
+</html>
