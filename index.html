@@ -31,6 +31,10 @@
             font-family: 'Tajawal', sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
+            transition: background-color 0.3s;
+        }
+        #app-container, #auth-container {
+            display: none; /* Hidden by default */
         }
         .main-container {
             margin-top: 2rem;
@@ -41,25 +45,20 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
         }
+        .auth-form-container {
+            max-width: 450px;
+            margin: 5rem auto;
+        }
         .app-header {
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 1rem;
-        }
-        .nav-tabs .nav-link {
-             color: var(--text-color);
-            font-weight: 500;
-            padding: 0.75rem 1.25rem;
-            border-radius: 8px 8px 0 0;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-        .nav-tabs .nav-link:hover{
-            border-bottom-color: var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .nav-tabs .nav-link.active {
             color: var(--primary-color);
             background-color: var(--light-primary);
-            border-color: var(--border-color) var(--border-color) var(--light-primary);
             border-bottom: 3px solid var(--primary-color);
         }
         .panel-header {
@@ -114,11 +113,42 @@
     </style>
 </head>
 <body>
+    
+    <!-- Auth Container -->
+    <div id="auth-container" class="container">
+        <div class="auth-form-container main-container">
+            <div class="text-center mb-4">
+                <h1 class="h3 mb-3 fw-normal">تسجيل الدخول</h1>
+                <p>لوحة تحكم مركز صلة التدريبي</p>
+            </div>
+            <form id="login-form">
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="login-email" placeholder="name@example.com" required>
+                    <label for="login-email">البريد الإلكتروني</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control" id="login-password" placeholder="Password" required>
+                    <label for="login-password">كلمة السر</label>
+                </div>
+                <button class="w-100 btn btn-lg btn-primary" type="submit">تسجيل الدخول</button>
+                 <div id="auth-error" class="alert alert-danger mt-3 d-none"></div>
+            </form>
+        </div>
+    </div>
 
-    <div class="container main-container">
-        <header class="text-center mb-4 app-header">
-            <h1 class="display-5 fw-bold">لوحة تحكم المشرفين</h1>
-            <p class="h5 text-muted">مركز صلة التدريبي الدولي</p>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="container main-container">
+        <header class="app-header">
+            <div class="text-center">
+                <h1 class="display-5 fw-bold">لوحة تحكم المشرفين</h1>
+                <p class="h5 text-muted">مركز صلة التدريبي الدولي</p>
+            </div>
+            <div>
+                 <button id="logout-btn" class="btn btn-outline-danger">
+                    <i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج
+                </button>
+            </div>
         </header>
 
         <main>
@@ -177,14 +207,10 @@
         </main>
     </div>
 
-    <!-- Modals (Add, Edit, Confirm) -->
-    <!-- Add/Edit Trainee Modal -->
+    <!-- All Modals -->
     <div class="modal fade" id="traineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="traineeForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="traineeModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المتدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-md-6"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-12"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div></div><h6 class="form-section-title">تسجيل الكورسات</h6><div id="traineeCoursesChecklist" class="row g-2"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
-    <!-- Add/Edit Trainer Modal -->
     <div class="modal fade" id="trainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="trainerForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="trainerModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" name="specialty" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" name="cv_file" class="form-control" accept=".pdf"><small id="currentCv" class="form-text text-muted"></small></div></div><h6 class="form-section-title">تفاصيل التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" name="contract_start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" name="contract_end_date" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
-    <!-- Add/Edit Schedule Modal -->
     <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="row g-3"><div class="col-12"><label class="form-label">اسم الكورس</label><select name="course_id" id="course-select-in-modal" class="form-select" required></select></div><div class="col-12"><label class="form-label">اسم المدرب</label><select name="trainer_id" id="trainer-select-in-modal" class="form-select" required></select></div><div class="col-md-6"><label class="form-label">اسم القاعة</label><input type="text" name="hall_name" class="form-control"></div><div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ البدء</label><input type="date" name="start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ الانتهاء</label><input type="date" name="end_date" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت البدء</label><input type="time" name="start_time" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت الانتهاء</label><input type="time" name="end_time" class="form-control"></div><div class="col-12"><label class="form-label">أيام الكورس</label><input type="text" name="course_days" class="form-control" placeholder="الأحد - الثلاثاء - الخميس"></div><div class="col-12"><label class="form-label">متقدمون للبورد الألماني (افصل بفاصلة)</label><input type="text" name="german_board_applicants" class="form-control"></div><div class="col-12"><label class="form-label">خطة المسار</label><textarea name="course_plan" class="form-control" rows="3"></textarea></div><div class="col-12"><label class="form-label">المواد المطلوبة</label><textarea name="required_materials" class="form-control" rows="2"></textarea></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
-    <!-- Confirmation Modal -->
     <div class="modal fade" id="confirmModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p id="confirmModalText"></p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div></div></div></div>
 
     <!-- Bootstrap JS Bundle -->
@@ -196,29 +222,64 @@
         // =================================================================================
         // !! هام جداً: قم باستبدال القيم التالية بالبيانات الخاصة بمشروعك على Supabase !!
         // =================================================================================
-        const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; // <-- الصق عنوان URL هنا
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0'; // <-- الصق مفتاح anon public هنا
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; 
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
         // =================================================================================
         
-        // Check for placeholder credentials before initializing
         if (SUPABASE_URL.includes('YOUR_SUPABASE_URL') || SUPABASE_KEY.includes('YOUR_SUPABASE_ANON_KEY')) {
-            const mainContent = document.querySelector('main');
-            if (mainContent) mainContent.style.display = 'none';
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'alert alert-danger text-center mt-4';
-            errorDiv.innerHTML = `<h4><i class="fas fa-exclamation-triangle me-2"></i>خطأ في الإعداد!</h4><p>يرجى فتح ملف <code>index.html</code> وتحديث قيم <code>SUPABASE_URL</code> و <code>SUPABASE_KEY</code> بالبيانات الصحيحة من مشروعك على Supabase.</p>`;
-            document.querySelector('.main-container').appendChild(errorDiv);
+            document.body.innerHTML = `<div class="container mt-5"><div class="alert alert-danger text-center"><h4>خطأ في الإعداد!</h4><p>يرجى فتح ملف <code>index.html</code> وتحديث قيم <code>SUPABASE_URL</code> و <code>SUPABASE_KEY</code> بالبيانات الصحيحة من مشروعك على Supabase.</p></div></div>`;
             throw new Error("Supabase credentials are not set.");
         }
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
 
-        // --- Utility Functions ---
+        // --- AUTHENTICATION ---
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const authErrorDiv = document.getElementById('auth-error');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                authErrorDiv.textContent = 'البريد الإلكتروني أو كلمة السر غير صحيحة.';
+                authErrorDiv.classList.remove('d-none');
+            } else {
+                 authErrorDiv.classList.add('d-none');
+                 checkUser();
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            checkUser();
+        });
+
+        async function checkUser() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                authContainer.style.display = 'none';
+                appContainer.style.display = 'block';
+                initializeApp();
+            } else {
+                authContainer.style.display = 'block';
+                appContainer.style.display = 'none';
+            }
+        }
+        
+        // --- UTILITY FUNCTIONS ---
         const showLoader = (containerId) => {
             document.getElementById(containerId).innerHTML = `<div class="loader"><div class="spinner-border text-primary" role="status"></div></div>`;
         };
         
-        let deleteFunction = null; // Store the delete function
+        let deleteFunction = null; 
         const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 
@@ -234,33 +295,26 @@
 
         const sanitizeData = (data) => {
             for (const key in data) {
-                if (data[key] === '') {
-                    data[key] = null;
-                }
+                if (data[key] === '') data[key] = null;
             }
             return data;
         };
-        // ================================================================================
-        //                                      TRAINERS
-        // ================================================================================
 
+        // --- CORE APP LOGIC ---
+        // Functions for trainers, trainees, schedules, summary...
         async function fetchTrainers(searchTerm = '') {
             showLoader('trainer-results');
             let query = supabaseClient.from('trainers').select('*').order('full_name');
             if (searchTerm) query = query.ilike('full_name', `%${searchTerm}%`);
             const { data, error } = await query;
-            if (error) {
-                console.error('Error fetching trainers:', error);
-                document.getElementById('trainer-results').innerHTML = `<div class="alert alert-danger">خطأ في جلب بيانات المدربين.</div>`;
-            } else {
-                displayTrainers(data);
-            }
+            if (error) console.error('Error fetching trainers:', error);
+            else displayTrainers(data);
         }
 
         function displayTrainers(trainers) {
             const container = document.getElementById('trainer-results');
             if (!trainers || trainers.length === 0) {
-                container.innerHTML = `<div class="alert alert-info">لا يوجد مدربين بهذه المواصفات.</div>`; return;
+                container.innerHTML = `<div class="alert alert-info">لا يوجد مدربين.</div>`; return;
             }
             container.innerHTML = trainers.map(trainer => `
                 <div class="result-card mb-3">
@@ -269,9 +323,8 @@
                         <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteTrainer('${trainer.id}', '${trainer.full_name}')"><i class="fas fa-trash"></i></button>
                     </div>
                     <h5><i class="fas fa-user-tie me-2"></i>${trainer.full_name}</h5>
-                    <p><strong>الهاتف:</strong> ${trainer.phone || 'غير متوفر'}</p>
-                    <p><strong>الاختصاص:</strong> ${trainer.specialty || 'غير متوفر'}</p>
-                    <p><strong>السيرة الذاتية:</strong> ${trainer.cv_url ? `<a href="${trainer.cv_url}" target="_blank" class="text-decoration-none">عرض الملف <i class="fas fa-external-link-alt ms-1"></i></a>` : 'لم يتم الرفع'}</p>
+                    <p><strong>الهاتف:</strong> ${trainer.phone || 'N/A'}</p>
+                    <p><strong>السيرة الذاتية:</strong> ${trainer.cv_url ? `<a href="${trainer.cv_url}" target="_blank">عرض</a>` : 'لا يوجد'}</p>
                 </div>
             `).join('');
         }
@@ -282,19 +335,15 @@
             form.reset();
             document.getElementById('currentCv').textContent = '';
             form.querySelector('[name="id"]').value = '';
-
             if (isEdit) {
                 document.getElementById('trainerModalTitle').textContent = 'تعديل بيانات المدرب';
                 const { data, error } = await supabaseClient.from('trainers').select('*').eq('id', id).single();
-                if (error) { console.error('Error fetching trainer for edit:', error); return; }
-                
+                if (error) return;
                 Object.keys(data).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
                     if (input && key !== 'cv_file') input.value = data[key];
                 });
-                if (data.cv_url) {
-                    document.getElementById('currentCv').textContent = `الملف الحالي: ${data.cv_url.split('/').pop()}`;
-                }
+                if (data.cv_url) document.getElementById('currentCv').textContent = `الملف الحالي: ${data.cv_url.split('/').pop()}`;
             } else {
                 document.getElementById('trainerModalTitle').textContent = 'إضافة مدرب جديد';
             }
@@ -305,65 +354,51 @@
             event.preventDefault();
             const form = event.target;
             const formData = new FormData(form);
-            const trainerData = Object.fromEntries(formData.entries());
+            let trainerData = Object.fromEntries(formData.entries());
             const id = trainerData.id;
             const cvFile = trainerData.cv_file;
             delete trainerData.cv_file;
             delete trainerData.id;
 
             if (cvFile && cvFile.size > 0) {
-                 const filePath = `public/${Date.now()}-${cvFile.name}`;
+                const filePath = `public/${Date.now()}-${cvFile.name}`;
                 const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile);
-                if (uploadError) { console.error('Error uploading CV:', uploadError); alert('حدث خطأ أثناء رفع السيرة الذاتية.'); return; }
+                if (uploadError) { alert('خطأ في رفع الملف.'); return; }
                 const { data: urlData } = supabaseClient.storage.from('trainer-cvs').getPublicUrl(filePath);
                 trainerData.cv_url = urlData.publicUrl;
             }
 
             const sanitizedData = sanitizeData(trainerData);
-            let response;
-            if (id) {
-                response = await supabaseClient.from('trainers').update(sanitizedData).eq('id', id);
-            } else {
-                response = await supabaseClient.from('trainers').insert([sanitizedData]);
-            }
+            let response = id ? await supabaseClient.from('trainers').update(sanitizedData).eq('id', id) : await supabaseClient.from('trainers').insert([sanitizedData]);
             
             if (response.error) {
-                console.error('Error saving trainer:', response.error); alert('حدث خطأ أثناء حفظ بيانات المدرب.');
+                console.error('Error saving trainer:', response.error); alert('خطأ في حفظ البيانات.');
             } else {
-                alert('تم حفظ البيانات بنجاح!'); trainerModal.hide(); fetchTrainers();
+                alert('تم الحفظ بنجاح!'); trainerModal.hide(); fetchTrainers();
             }
         }
         
         function handleDeleteTrainer(id, name) {
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('trainers').delete().eq('id', id);
-                if (error) { console.error('Error deleting trainer:', error); alert('خطأ في حذف المدرب.'); } 
-                else { alert('تم حذف المدرب.'); fetchTrainers(); }
+                if (error) alert('خطأ في الحذف.');
+                else { alert('تم الحذف.'); fetchTrainers(); }
             }, `هل أنت متأكد من حذف المدرب "${name}"؟`);
         }
 
-        // ================================================================================
-        //                                      TRAINEES
-        // ================================================================================
-        
         async function fetchTrainees(searchTerm = '') {
             showLoader('trainee-results');
             let query = supabaseClient.from('trainees').select(`*, trainee_enrollments(courses(name))`).order('full_name');
             if (searchTerm) query = query.ilike('full_name', `%${searchTerm}%`);
-            
             const { data, error } = await query;
-            if (error) {
-                console.error('Error fetching trainees:', error);
-                document.getElementById('trainee-results').innerHTML = `<div class="alert alert-danger">خطأ في جلب بيانات المتدربين.</div>`;
-            } else {
-                displayTrainees(data);
-            }
+            if (error) console.error('Error fetching trainees:', error);
+            else displayTrainees(data);
         }
 
         function displayTrainees(trainees) {
             const container = document.getElementById('trainee-results');
             if (!trainees || trainees.length === 0) {
-                container.innerHTML = `<div class="alert alert-info">لا يوجد متدربين بهذه المواصفات.</div>`; return;
+                container.innerHTML = `<div class="alert alert-info">لا يوجد متدربين.</div>`; return;
             }
             container.innerHTML = trainees.map(trainee => {
                 const enrolledCourses = trainee.trainee_enrollments.map(e => e.courses.name).join(', ');
@@ -374,10 +409,10 @@
                         <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteTrainee('${trainee.id}', '${trainee.full_name}')"><i class="fas fa-trash"></i></button>
                     </div>
                     <h5><i class="fas fa-user-graduate me-2"></i>${trainee.full_name}</h5>
-                    <p><strong>الهاتف:</strong> ${trainee.phone || 'غير متوفر'}</p>
-                    <p><strong>الكورسات المسجلة:</strong> ${enrolledCourses || 'لا يوجد'}</p>
-                </div>
-            `}).join('');
+                    <p><strong>الهاتف:</strong> ${trainee.phone || 'N/A'}</p>
+                    <p><strong>الكورسات:</strong> ${enrolledCourses || 'لا يوجد'}</p>
+                </div>`;
+            }).join('');
         }
         
         const traineeModal = new bootstrap.Modal(document.getElementById('traineeModal'));
@@ -388,8 +423,7 @@
             
             const checklistContainer = document.getElementById('traineeCoursesChecklist');
             checklistContainer.innerHTML = '<div class="spinner-border spinner-border-sm"></div>';
-            const { data: allCourses, error: coursesError } = await supabaseClient.from('courses').select('id, name');
-
+            const { data: allCourses } = await supabaseClient.from('courses').select('id, name');
             if (allCourses) {
                 checklistContainer.innerHTML = allCourses.map(course => `
                     <div class="col-md-6"><div class="form-check">
@@ -402,9 +436,8 @@
 
             if (isEdit) {
                 document.getElementById('traineeModalTitle').textContent = 'تعديل بيانات المتدرب';
-                const { data, error } = await supabaseClient.from('trainees').select('*, trainee_enrollments(course_id)').eq('id', id).single();
-                if (error) { console.error('Error fetching trainee for edit:', error); return; }
-                
+                const { data } = await supabaseClient.from('trainees').select('*, trainee_enrollments(course_id)').eq('id', id).single();
+                if (!data) return;
                 Object.keys(data).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
                     if (input) input.value = data[key];
@@ -429,82 +462,59 @@
             const selectedCourses = [];
             
             formData.forEach((value, key) => {
-                if (key === 'course_ids') {
-                    selectedCourses.push(value);
-                } else {
-                    traineeData[key] = value;
-                }
+                if (key === 'course_ids') selectedCourses.push(value);
+                else traineeData[key] = value;
             });
 
             const id = traineeData.id;
             delete traineeData.id;
 
             const sanitizedData = sanitizeData(traineeData);
-            let response;
-            if (id) {
-                response = await supabaseClient.from('trainees').update(sanitizedData).eq('id', id).select().single();
-            } else {
-                response = await supabaseClient.from('trainees').insert([sanitizedData]).select().single();
-            }
+            let response = id ? await supabaseClient.from('trainees').update(sanitizedData).eq('id', id).select().single() : await supabaseClient.from('trainees').insert([sanitizedData]).select().single();
             
-            if (response.error) {
-                console.error('Error saving trainee:', response.error); alert('حدث خطأ أثناء حفظ بيانات المتدرب.'); return;
-            }
-
+            if (response.error) { alert('خطأ في حفظ المتدرب.'); return; }
+            
             const traineeId = response.data.id;
-            const { error: deleteError } = await supabaseClient.from('trainee_enrollments').delete().eq('trainee_id', traineeId);
-            if (deleteError) { console.error('Error clearing old enrollments:', deleteError); }
-
+            await supabaseClient.from('trainee_enrollments').delete().eq('trainee_id', traineeId);
+            
             if (selectedCourses.length > 0) {
                 const enrollmentsToInsert = selectedCourses.map(courseId => ({ trainee_id: traineeId, course_id: courseId }));
-                const { error: insertError } = await supabaseClient.from('trainee_enrollments').insert(enrollmentsToInsert);
-                if (insertError) { console.error('Error saving enrollments:', insertError); alert('حدث خطأ أثناء تسجيل الكورسات.'); return; }
+                await supabaseClient.from('trainee_enrollments').insert(enrollmentsToInsert);
             }
             
-            alert('تم حفظ البيانات بنجاح!');
-            traineeModal.hide();
-            fetchTrainees();
-            fetchSummaryData();
+            alert('تم الحفظ بنجاح!'); traineeModal.hide(); fetchTrainees(); fetchSummaryData();
         }
         
         function handleDeleteTrainee(id, name) {
              confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('trainees').delete().eq('id', id);
-                if (error) { console.error('Error deleting trainee:', error); alert('خطأ في حذف المتدرب.'); } 
-                else { alert('تم حذف المتدرب.'); fetchTrainees(); fetchSummaryData(); }
-            }, `هل أنت متأكد من حذف المتدرب "${name}"؟`);
+                if (error) alert('خطأ في الحذف.');
+                else { alert('تم الحذف.'); fetchTrainees(); fetchSummaryData(); }
+            }, `هل أنت متأكد من حذف "${name}"؟`);
         }
-
-        // ================================================================================
-        //                                      SCHEDULES
-        // ================================================================================
         
         async function fetchSchedules() {
             showLoader('schedule-results');
-            const { data, error } = await supabaseClient.from('schedules').select(`*, courses ( name ), trainers ( full_name )`).order('start_date');
-            if (error) {
-                console.error('Error fetching schedules:', error);
-                document.getElementById('schedule-results').innerHTML = `<div class="alert alert-danger">خطأ في جلب بيانات الجدولة.</div>`;
-            } else {
-                displaySchedules(data);
-            }
+            const { data, error } = await supabaseClient.from('schedules').select(`*, courses(name), trainers(full_name)`).order('start_date');
+            if (error) console.error('Error fetching schedules:', error);
+            else displaySchedules(data);
         }
         
         function displaySchedules(schedules) {
             const container = document.getElementById('schedule-results');
-             if (!schedules || schedules.length === 0) {
-                container.innerHTML = `<div class="alert alert-info">لا توجد مواعيد مجدولة حالياً.</div>`; return;
+            if (!schedules || schedules.length === 0) {
+                container.innerHTML = `<div class="alert alert-info">لا توجد مواعيد مجدولة.</div>`; return;
             }
             container.innerHTML = schedules.map(schedule => `
                 <div class="result-card mb-3">
                     <div class="card-actions">
                         <button class="btn btn-sm btn-outline-primary" onclick="openScheduleModal(true, '${schedule.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : 'كورس'}')"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : ''}')"><i class="fas fa-trash"></i></button>
                     </div>
-                    <h5><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'كورس محذوف'}</h5>
-                    <p><strong>المدرب:</strong> ${schedule.trainers ? schedule.trainers.full_name : 'مدرب محذوف'}</p>
-                    <p><strong>القاعة:</strong> ${schedule.hall_name || 'غير محدد'}</p>
-                    <p><strong>التاريخ:</strong> من ${schedule.start_date || '?'} إلى ${schedule.end_date || '?'}</p>
+                    <h5><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'N/A'}</h5>
+                    <p><strong>المدرب:</strong> ${schedule.trainers ? schedule.trainers.full_name : 'N/A'}</p>
+                    <p><strong>القاعة:</strong> ${schedule.hall_name || 'N/A'}</p>
+                    <p><strong>التاريخ:</strong> ${schedule.start_date || '?'} - ${schedule.end_date || '?'}</p>
                 </div>
             `).join('');
         }
@@ -518,16 +528,13 @@
 
             if (isEdit) {
                 document.getElementById('scheduleModalTitle').textContent = 'تعديل الموعد';
-                const { data, error } = await supabaseClient.from('schedules').select('*').eq('id', id).single();
-                if (error) { console.error('Error fetching schedule for edit:', error); return; }
+                const { data } = await supabaseClient.from('schedules').select('*').eq('id', id).single();
+                if (!data) return;
                 Object.keys(data).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
                     if (input) {
-                        if(key === 'german_board_applicants' && Array.isArray(data[key])) {
-                            input.value = data[key].join(', ');
-                        } else {
-                            input.value = data[key];
-                        }
+                        if(key === 'german_board_applicants' && Array.isArray(data[key])) input.value = data[key].join(', ');
+                        else input.value = data[key];
                     }
                 });
             } else {
@@ -544,110 +551,77 @@
             const id = scheduleData.id;
             delete scheduleData.id;
             
-            if (scheduleData.german_board_applicants) {
-                scheduleData.german_board_applicants = scheduleData.german_board_applicants.split(',').map(s => s.trim());
-            } else { scheduleData.german_board_applicants = []; }
+            if (scheduleData.german_board_applicants) scheduleData.german_board_applicants = scheduleData.german_board_applicants.split(',').map(s => s.trim());
+            else scheduleData.german_board_applicants = [];
 
             const sanitizedData = sanitizeData(scheduleData);
-            let response;
-            if(id) {
-                response = await supabaseClient.from('schedules').update(sanitizedData).eq('id', id);
-            } else {
-                response = await supabaseClient.from('schedules').insert([sanitizedData]);
-            }
+            let response = id ? await supabaseClient.from('schedules').update(sanitizedData).eq('id', id) : await supabaseClient.from('schedules').insert([sanitizedData]);
             
-             if (response.error) {
-                console.error('Error saving schedule:', response.error); alert('حدث خطأ أثناء حفظ الموعد.');
-            } else {
-                alert('تم حفظ الموعد بنجاح!');
-                scheduleModal.hide();
-                fetchSchedules();
-            }
+            if (response.error) { console.error(response.error); alert('خطأ في حفظ الموعد.'); } 
+            else { alert('تم الحفظ بنجاح!'); scheduleModal.hide(); fetchSchedules(); }
         }
         
         function handleDeleteSchedule(id, name) {
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('schedules').delete().eq('id', id);
-                if (error) { console.error('Error deleting schedule:', error); alert('خطأ في حذف الموعد.'); } 
-                else { alert('تم حذف الموعد.'); fetchSchedules(); }
-            }, `هل أنت متأكد من حذف موعد كورس "${name}"؟`);
+                if (error) alert('خطأ في الحذف.');
+                else { alert('تم الحذف.'); fetchSchedules(); }
+            }, `هل أنت متأكد من حذف موعد "${name}"؟`);
         }
         
         async function populateScheduleModalSelects() {
             const { data: courses } = await supabaseClient.from('courses').select('id, name');
             const { data: trainers } = await supabaseClient.from('trainers').select('id, full_name');
-            if (courses) {
-                document.getElementById('course-select-in-modal').innerHTML = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            }
-            if (trainers) {
-                document.getElementById('trainer-select-in-modal').innerHTML = trainers.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
-            }
+            if (courses) document.getElementById('course-select-in-modal').innerHTML = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            if (trainers) document.getElementById('trainer-select-in-modal').innerHTML = trainers.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
         }
-        
-        // ================================================================================
-        //                                      SUMMARY & COURSES
-        // ================================================================================
         
         async function fetchSummaryData() {
             showLoader('summary-content');
-            const { count, error: countError } = await supabaseClient.from('trainees').select('*', { count: 'exact', head: true });
-            const { data: courses, error: coursesError } = await supabaseClient.from('courses').select('*').order('name');
-
-            if(countError || coursesError) {
-                 console.error('Error fetching summary:', countError || coursesError);
-                 document.getElementById('summary-content').innerHTML = `<div class="alert alert-danger">خطأ في جلب بيانات الملخص.</div>`;
-                 return;
-            }
+            const { count } = await supabaseClient.from('trainees').select('*', { count: 'exact', head: true });
+            const { data: courses } = await supabaseClient.from('courses').select('*').order('name');
             
             document.getElementById('summary-content').innerHTML = `
                 <div class="col-lg-5 mb-4">
-                    <div class="card text-center h-100 shadow-sm">
-                        <div class="card-body p-4 d-flex flex-column justify-content-center">
-                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
-                            <h5 class="card-title h4">إجمالي الطلاب المسجلين</h5>
-                            <p class="display-4 fw-bold m-0">${count || 0}</p>
-                        </div>
-                    </div>
+                    <div class="card text-center h-100 shadow-sm"><div class="card-body p-4 d-flex flex-column justify-content-center">
+                        <i class="fas fa-users fa-3x text-primary mb-3"></i><h5 class="card-title h4">إجمالي الطلاب</h5>
+                        <p class="display-4 fw-bold m-0">${count || 0}</p>
+                    </div></div>
                 </div>
                 <div class="col-lg-7 mb-4">
-                     <div class="card h-100 shadow-sm">
-                        <div class="card-body p-4">
-                            <h5 class="card-title h4 text-center">إدارة الكورسات</h5>
-                             <form id="addCourseForm" class="d-flex mt-3 mb-3">
-                                <input type="text" name="name" class="form-control me-2" placeholder="اسم الكورس الجديد" required>
-                                <button type="submit" class="btn btn-success flex-shrink-0">إضافة</button>
-                            </form>
-                            <ul id="coursesList" class="list-group list-group-flush">
-                                ${courses.length > 0 ? courses.map(c => `<li class="list-group-item d-flex justify-content-between align-items-center">${c.name}<button class="btn btn-sm btn-outline-danger" onclick="handleDeleteCourse('${c.id}', '${c.name}')"><i class="fas fa-trash"></i></button></li>`).join('') : '<li class="list-group-item">لا توجد كورسات مضافة.</li>'}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            `;
-             document.getElementById('addCourseForm').addEventListener('submit', handleAddCourse);
+                     <div class="card h-100 shadow-sm"><div class="card-body p-4">
+                        <h5 class="card-title h4 text-center">إدارة الكورسات</h5>
+                        <form id="addCourseForm" class="d-flex mt-3 mb-3">
+                            <input type="text" name="name" class="form-control me-2" placeholder="اسم الكورس الجديد" required>
+                            <button type="submit" class="btn btn-success flex-shrink-0">إضافة</button>
+                        </form>
+                        <ul id="coursesList" class="list-group list-group-flush">
+                            ${courses && courses.length > 0 ? courses.map(c => `<li class="list-group-item d-flex justify-content-between align-items-center">${c.name}<button class="btn btn-sm btn-outline-danger" onclick="handleDeleteCourse('${c.id}', '${c.name}')"><i class="fas fa-trash"></i></button></li>`).join('') : '<li class="list-group-item">لا توجد كورسات.</li>'}
+                        </ul>
+                    </div></div>
+                </div>`;
+            document.getElementById('addCourseForm').addEventListener('submit', handleAddCourse);
         }
 
         async function handleAddCourse(event) {
             event.preventDefault();
             const form = event.target;
-            const formData = new FormData(form);
-            const courseName = formData.get('name');
-
+            const courseName = new FormData(form).get('name');
             const { error } = await supabaseClient.from('courses').insert([{ name: courseName }]);
-            if (error) { alert(`خطأ: ${error.message}`); } 
-            else { alert('تمت إضافة الكورس بنجاح!'); form.reset(); fetchSummaryData();}
+            if (error) alert(`خطأ: ${error.message}`);
+            else { alert('تمت الإضافة!'); form.reset(); fetchSummaryData(); }
         }
         
         function handleDeleteCourse(id, name) {
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('courses').delete().eq('id', id);
-                if (error) { alert('خطأ في حذف الكورس. قد يكون مرتبطاً بجدول زمني.'); console.error(error); } 
-                else { alert('تم حذف الكورس.'); fetchSummaryData(); }
-            }, `هل أنت متأكد من حذف كورس "${name}"؟ سيتم حذف كل الجداول المرتبطة به.`);
+                if (error) alert('خطأ في الحذف، قد يكون الكورس مرتبطاً بجدول.');
+                else { alert('تم الحذف.'); fetchSummaryData(); }
+            }, `هل أنت متأكد من حذف كورس "${name}"؟`);
         }
 
-        // --- Event Listeners & Initial Load ---
-        document.addEventListener('DOMContentLoaded', () => {
+        // --- APP INITIALIZATION ---
+        function initializeApp() {
             fetchSummaryData();
             fetchTrainees();
             fetchTrainers();
@@ -663,7 +637,9 @@
             document.getElementById('traineeForm').addEventListener('submit', handleTraineeFormSubmit);
             document.getElementById('trainerForm').addEventListener('submit', handleTrainerFormSubmit);
             document.getElementById('scheduleForm').addEventListener('submit', handleScheduleFormSubmit);
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', checkUser);
 
     </script>
 </body>
