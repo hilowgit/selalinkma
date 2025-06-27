@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة مركز صلة التدريبي الدولي - لوحة تحكم المشرفين</title>
 
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
+    <!-- Google Fonts for Arabic -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -16,14 +19,12 @@
     <style>
         :root {
             --primary-color: #0d6efd;
-            --primary-color-rgb: 13, 110, 253;
             --light-primary: #f0f5ff;
             --background-color: #f4f7fc;
             --card-bg: #ffffff;
             --text-color: #4a5568;
             --heading-color: #2d3748;
             --border-color: #e2e8f0;
-            --success-color: #198754;
             --danger-color: #dc3545;
         }
         body {
@@ -55,9 +56,6 @@
             justify-content: space-between;
             align-items: center;
         }
-        .nav-tabs .nav-link {
-            transition: all 0.2s ease-in-out;
-        }
         .nav-tabs .nav-link.active {
             color: var(--primary-color);
             background-color: var(--light-primary);
@@ -81,43 +79,18 @@
             border-radius: 10px;
             padding: 1.5rem;
             background-color: #fcfdff;
-            transition: all 0.2s ease-in-out;
             position: relative;
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
         }
-        .result-card:hover {
-             transform: translateY(-3px);
-             box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-             border-color: var(--primary-color);
-        }
-        .card-icon {
-            font-size: 2rem;
-            color: var(--primary-color);
-            background-color: var(--light-primary);
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            flex-shrink: 0;
-        }
-        .card-content {
-            flex-grow: 1;
-        }
-        .card-content h5 { margin-bottom: 0.5rem; }
-        .card-content p { margin-bottom: 0.2rem; font-size: 0.9rem; }
-
         .card-actions {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
             display: flex;
             gap: 0.5rem;
-            margin-right: auto; /* Push actions to the left */
         }
         .card-actions .btn {
-            width: 38px;
-            height: 38px;
+            width: 35px;
+            height: 35px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -137,50 +110,11 @@
             padding-bottom: 0.5rem;
         }
         .loader { text-align: center; padding: 2rem; }
-        .search-input-group .form-control:focus {
-             box-shadow: 0 0 0 .25rem rgba(var(--primary-color-rgb), .25);
-             border-color: var(--primary-color);
-        }
-        .search-input-group .input-group-text {
-            background-color: transparent;
-            border-right: 0;
-            border-left: 1px solid #dee2e6;
-        }
-
-        /* Toast Notifications */
-        #toast-container {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 1090;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .toast-notification {
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease-in-out;
-        }
-        .toast-notification.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .toast-notification.success { background-color: var(--success-color); }
-        .toast-notification.error { background-color: var(--danger-color); }
     </style>
 </head>
 <body>
     
-    <div id="toast-container"></div>
-
+    <!-- Auth Container -->
     <div id="auth-container" class="container">
         <div class="auth-form-container main-container">
             <div class="text-center mb-4">
@@ -196,30 +130,29 @@
                     <input type="password" class="form-control" id="login-password" placeholder="Password" required>
                     <label for="login-password">كلمة السر</label>
                 </div>
-                <button class="w-100 btn btn-lg btn-primary" type="submit">
-                     <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                     <span>تسجيل الدخول</span>
-                </button>
+                <button class="w-100 btn btn-lg btn-primary" type="submit">تسجيل الدخول</button>
                  <div id="auth-error" class="alert alert-danger mt-3 d-none"></div>
             </form>
         </div>
     </div>
 
 
+    <!-- Main App Container -->
     <div id="app-container" class="container main-container">
         <header class="app-header">
-            <div>
-                <h1 class="h2 fw-bold mb-0">لوحة تحكم المشرفين</h1>
-                <p class="text-muted mb-0">مركز صلة التدريبي الدولي</p>
+            <div class="text-center">
+                <h1 class="display-5 fw-bold">لوحة تحكم المشرفين</h1>
+                <p class="h5 text-muted">مركز صلة التدريبي الدولي</p>
             </div>
             <div>
                  <button id="logout-btn" class="btn btn-outline-danger">
-                     <i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج
-                 </button>
+                    <i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج
+                </button>
             </div>
         </header>
 
-        <main class="mt-4">
+        <main>
+            <!-- Navigation Tabs -->
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation"><button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary-panel" type="button"><i class="fas fa-chart-line me-2"></i>الملخصات</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="trainees-tab" data-bs-toggle="tab" data-bs-target="#trainees-panel" type="button"><i class="fas fa-user-graduate me-2"></i>المتدربين</button></li>
@@ -227,47 +160,46 @@
                 <li class="nav-item" role="presentation"><button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-panel" type="button"><i class="fas fa-calendar-alt me-2"></i>الجدولة</button></li>
             </ul>
 
+            <!-- Tab Content -->
             <div class="tab-content pt-4" id="myTabContent">
                 
+                <!-- Summary Panel -->
                 <div class="tab-pane fade show active p-3" id="summary-panel" role="tabpanel">
                     <h4 class="mb-4">ملخص الأداء العام</h4>
                     <div id="summary-content" class="row"></div>
                 </div>
 
+                <!-- Trainees Panel -->
                 <div class="tab-pane fade p-3" id="trainees-panel" role="tabpanel">
                     <div class="panel-header">
                         <h4 class="m-0">قاعدة بيانات المتدربين</h4>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#traineeModal" data-action="add">
-                            <i class="fas fa-plus me-2"></i>إضافة متدرب جديد
-                        </button>
+                        <button id="addTraineeBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة متدرب جديد</button>
                     </div>
-                    <div class="input-group mb-4 search-input-group">
-                         <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        <input type="text" class="form-control" id="trainee-search-input" placeholder="ابحث بالاسم أو الهاتف...">
+                    <div class="input-group mb-4">
+                        <input type="text" class="form-control" id="trainee-search-input" placeholder="أدخل اسم المتدرب للبحث...">
+                        <button class="btn btn-outline-primary" type="button" id="trainee-search-btn"><i class="fas fa-search"></i></button>
                     </div>
                     <div id="trainee-results" class="mt-4"></div>
                 </div>
 
+                <!-- Trainers Panel -->
                 <div class="tab-pane fade p-3" id="trainers-panel" role="tabpanel">
                     <div class="panel-header">
                         <h4 class="m-0">قاعدة بيانات المدربين</h4>
-                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#trainerModal" data-action="add">
-                            <i class="fas fa-plus me-2"></i>إضافة مدرب جديد
-                        </button>
+                        <button id="addTrainerBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة مدرب جديد</button>
                     </div>
-                     <div class="input-group mb-4 search-input-group">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        <input type="text" class="form-control" id="trainer-search-input" placeholder="ابحث بالاسم أو التخصص...">
+                    <div class="input-group mb-4">
+                        <input type="text" class="form-control" id="trainer-search-input" placeholder="أدخل اسم المدرب للبحث...">
+                        <button class="btn btn-outline-primary" type="button" id="trainer-search-btn"><i class="fas fa-search"></i></button>
                     </div>
                     <div id="trainer-results" class="mt-4"></div>
                 </div>
 
+                <!-- Schedule Panel -->
                 <div class="tab-pane fade p-3" id="schedule-panel" role="tabpanel">
                     <div class="panel-header">
                         <h4 class="m-0">جدول مواعيد الكورسات</h4>
-                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleModal" data-action="add">
-                            <i class="fas fa-plus me-2"></i>إضافة موعد جديد
-                        </button>
+                        <button id="addScheduleBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة موعد جديد</button>
                     </div>
                     <div id="schedule-results" class="mt-4"></div>
                 </div>
@@ -275,17 +207,20 @@
         </main>
     </div>
 
-    <div class="modal fade" id="traineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="traineeForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="traineeModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المتدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-md-6"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-12"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div></div><h6 class="form-section-title">تسجيل الكورسات</h6><div id="traineeCoursesChecklist" class="row g-2"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> <span>حفظ</span></button></div></form></div></div></div>
-    <div class="modal fade" id="trainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="trainerForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="trainerModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" name="specialty" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" name="cv_file" class="form-control" accept=".pdf"><small id="currentCv" class="form-text text-muted"></small></div></div><h6 class="form-section-title">تفاصيل التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" name="contract_start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" name="contract_end_date" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> <span>حفظ</span></button></div></form></div></div></div>
-    <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="row g-3"><div class="col-12"><label class="form-label">اسم الكورس</label><select name="course_id" id="course-select-in-modal" class="form-select" required></select></div><div class="col-12"><label class="form-label">اسم المدرب</label><select name="trainer_id" id="trainer-select-in-modal" class="form-select" required></select></div><div class="col-md-6"><label class="form-label">اسم القاعة</label><input type="text" name="hall_name" class="form-control"></div><div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ البدء</label><input type="date" name="start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ الانتهاء</label><input type="date" name="end_date" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت البدء</label><input type="time" name="start_time" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت الانتهاء</label><input type="time" name="end_time" class="form-control"></div><div class="col-12"><label class="form-label">أيام الكورس</label><input type="text" name="course_days" class="form-control" placeholder="الأحد - الثلاثاء - الخميس"></div><div class="col-12"><label class="form-label">متقدمون للبورد الألماني (افصل بفاصلة)</label><input type="text" name="german_board_applicants" class="form-control"></div><div class="col-12"><label class="form-label">خطة المسار</label><textarea name="course_plan" class="form-control" rows="3"></textarea></div><div class="col-12"><label class="form-label">المواد المطلوبة</label><textarea name="required_materials" class="form-control" rows="2"></textarea></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> <span>حفظ</span></button></div></form></div></div></div>
-    <div class="modal fade" id="confirmModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p id="confirmModalText"></p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn"><span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> <span>حذف</span></button></div></div></div></div>
+    <!-- All Modals -->
+    <div class="modal fade" id="traineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="traineeForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="traineeModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المتدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-md-6"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-12"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div></div><h6 class="form-section-title">تسجيل الكورسات</h6><div id="traineeCoursesChecklist" class="row g-2"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
+    <div class="modal fade" id="trainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="trainerForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="trainerModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" name="specialty" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" name="cv_file" class="form-control" accept=".pdf"><small id="currentCv" class="form-text text-muted"></small></div></div><h6 class="form-section-title">تفاصيل التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" name="contract_start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" name="contract_end_date" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
+    <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="row g-3"><div class="col-12"><label class="form-label">اسم الكورس</label><select name="course_id" id="course-select-in-modal" class="form-select" required></select></div><div class="col-12"><label class="form-label">اسم المدرب</label><select name="trainer_id" id="trainer-select-in-modal" class="form-select" required></select></div><div class="col-md-6"><label class="form-label">اسم القاعة</label><input type="text" name="hall_name" class="form-control"></div><div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ البدء</label><input type="date" name="start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ الانتهاء</label><input type="date" name="end_date" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت البدء</label><input type="time" name="start_time" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت الانتهاء</label><input type="time" name="end_time" class="form-control"></div><div class="col-12"><label class="form-label">أيام الكورس</label><input type="text" name="course_days" class="form-control" placeholder="الأحد - الثلاثاء - الخميس"></div><div class="col-12"><label class="form-label">متقدمون للبورد الألماني (افصل بفاصلة)</label><input type="text" name="german_board_applicants" class="form-control"></div><div class="col-12"><label class="form-label">خطة المسار</label><textarea name="course_plan" class="form-control" rows="3"></textarea></div><div class="col-12"><label class="form-label">المواد المطلوبة</label><textarea name="required_materials" class="form-control" rows="2"></textarea></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
+    <div class="modal fade" id="confirmModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p id="confirmModalText"></p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div></div></div></div>
 
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
         // =================================================================================
-        // تم إدخال بيانات مشروعك هنا بنجاح
+        // !! هام جداً: قم باستبدال القيم التالية بالبيانات الخاصة بمشروعك على Supabase !!
         // =================================================================================
         const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0';
@@ -301,47 +236,6 @@
         const authContainer = document.getElementById('auth-container');
         const appContainer = document.getElementById('app-container');
 
-        // --- UTILITY FUNCTIONS ---
-        const showLoader = (containerId) => {
-            document.getElementById(containerId).innerHTML = `<div class="loader"><div class="spinner-border text-primary" role="status"></div></div>`;
-        };
-        
-        const sanitizeData = (data) => {
-            for (const key in data) {
-                if (data[key] === '') data[key] = null;
-            }
-            return data;
-        };
-
-        const toggleButtonSpinner = (button, show) => {
-            const spinner = button.querySelector('.spinner-border');
-            const buttonText = button.querySelector('span:not(.spinner-border)');
-            if (show) {
-                button.disabled = true;
-                spinner?.classList.remove('d-none');
-                if (buttonText) buttonText.style.opacity = '0';
-            } else {
-                button.disabled = false;
-                spinner?.classList.add('d-none');
-                 if (buttonText) buttonText.style.opacity = '1';
-            }
-        };
-
-        const showToast = (message, type = 'success') => {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast-notification ${type}`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${message}`;
-            container.appendChild(toast);
-            
-            setTimeout(() => toast.classList.add('show'), 10); // Trigger transition
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300); // Remove from DOM after transition
-            }, 4000);
-        };
-
-
         // --- AUTHENTICATION ---
         const loginForm = document.getElementById('login-form');
         const logoutBtn = document.getElementById('logout-btn');
@@ -349,9 +243,6 @@
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const submitButton = loginForm.querySelector('button[type="submit"]');
-            toggleButtonSpinner(submitButton, true);
-            
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             
@@ -361,10 +252,9 @@
                 authErrorDiv.textContent = 'البريد الإلكتروني أو كلمة السر غير صحيحة.';
                 authErrorDiv.classList.remove('d-none');
             } else {
-                authErrorDiv.classList.add('d-none');
-                checkUser();
+                 authErrorDiv.classList.add('d-none');
+                 checkUser();
             }
-            toggleButtonSpinner(submitButton, false);
         });
 
         logoutBtn.addEventListener('click', async () => {
@@ -384,6 +274,11 @@
             }
         }
         
+        // --- UTILITY FUNCTIONS ---
+        const showLoader = (containerId) => {
+            document.getElementById(containerId).innerHTML = `<div class="loader"><div class="spinner-border text-primary" role="status"></div></div>`;
+        };
+        
         let deleteFunction = null; 
         const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
@@ -393,78 +288,57 @@
             deleteFunction = callback;
             confirmModal.show();
         }
-
-        confirmDeleteBtn.addEventListener('click', async () => {
-            toggleButtonSpinner(confirmDeleteBtn, true);
-            if (deleteFunction) await deleteFunction();
-            toggleButtonSpinner(confirmDeleteBtn, false);
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (deleteFunction) deleteFunction();
             confirmModal.hide();
         });
-        
-        // --- DEBOUNCE for search inputs ---
-        function debounce(func, delay) {
-            let timeout;
-            return function(...args) {
-                const context = this;
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(context, args), delay);
-            };
-        }
 
+        const sanitizeData = (data) => {
+            for (const key in data) {
+                if (data[key] === '') data[key] = null;
+            }
+            return data;
+        };
 
         // --- CORE APP LOGIC ---
-        // TRAINERS
+        // Functions for trainers, trainees, schedules, summary...
         async function fetchTrainers(searchTerm = '') {
             showLoader('trainer-results');
             let query = supabaseClient.from('trainers').select('*').order('full_name');
-            if (searchTerm) query = query.or(`full_name.ilike.%${searchTerm}%,specialty.ilike.%${searchTerm}%`);
+            if (searchTerm) query = query.ilike('full_name', `%${searchTerm}%`);
             const { data, error } = await query;
-            if (error) {
-                console.error('Error fetching trainers:', error);
-                showToast('خطأ في جلب بيانات المدربين', 'error');
-            } else {
-                 displayTrainers(data);
-            }
+            if (error) console.error('Error fetching trainers:', error);
+            else displayTrainers(data);
         }
 
         function displayTrainers(trainers) {
             const container = document.getElementById('trainer-results');
             if (!trainers || trainers.length === 0) {
-                container.innerHTML = `<div class="alert alert-info">لا يوجد مدربين يطابقون البحث.</div>`; return;
+                container.innerHTML = `<div class="alert alert-info">لا يوجد مدربين.</div>`; return;
             }
             container.innerHTML = trainers.map(trainer => `
                 <div class="result-card mb-3">
-                    <div class="card-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-                    <div class="card-content">
-                        <h5>${trainer.full_name}</h5>
-                        <p><strong>الهاتف:</strong> ${trainer.phone || 'غير متوفر'}</p>
-                        <p><strong>التخصص:</strong> ${trainer.specialty || 'غير محدد'}</p>
-                        <p><strong>السيرة الذاتية:</strong> ${trainer.cv_url ? `<a href="${trainer.cv_url}" target="_blank">عرض الملف</a>` : 'لا يوجد'}</p>
-                    </div>
                     <div class="card-actions">
-                        <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${trainer.id}" data-bs-toggle="modal" data-bs-target="#trainerModal"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${trainer.id}" data-name="${trainer.full_name}"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="openTrainerModal(true, '${trainer.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteTrainer('${trainer.id}', '${trainer.full_name}')"><i class="fas fa-trash"></i></button>
                     </div>
+                    <h5><i class="fas fa-user-tie me-2"></i>${trainer.full_name}</h5>
+                    <p><strong>الهاتف:</strong> ${trainer.phone || 'N/A'}</p>
+                    <p><strong>السيرة الذاتية:</strong> ${trainer.cv_url ? `<a href="${trainer.cv_url}" target="_blank">عرض</a>` : 'لا يوجد'}</p>
                 </div>
             `).join('');
         }
         
-        const trainerModalEl = document.getElementById('trainerModal');
-        const trainerModal = new bootstrap.Modal(trainerModalEl);
-        trainerModalEl.addEventListener('show.bs.modal', async (event) => {
-            const button = event.relatedTarget;
-            const action = button.getAttribute('data-action');
+        const trainerModal = new bootstrap.Modal(document.getElementById('trainerModal'));
+        async function openTrainerModal(isEdit = false, id = null) {
             const form = document.getElementById('trainerForm');
             form.reset();
             document.getElementById('currentCv').textContent = '';
             form.querySelector('[name="id"]').value = '';
-            
-            if (action === 'edit') {
-                const id = button.getAttribute('data-id');
+            if (isEdit) {
                 document.getElementById('trainerModalTitle').textContent = 'تعديل بيانات المدرب';
                 const { data, error } = await supabaseClient.from('trainers').select('*').eq('id', id).single();
-                if (error || !data) { showToast('لا يمكن تحميل بيانات المدرب', 'error'); return; }
-                
+                if (error) return;
                 Object.keys(data).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
                     if (input && key !== 'cv_file') input.value = data[key];
@@ -473,14 +347,12 @@
             } else {
                 document.getElementById('trainerModalTitle').textContent = 'إضافة مدرب جديد';
             }
-        });
-
-        document.getElementById('trainerForm').addEventListener('submit', async (event) => {
+            trainerModal.show();
+        }
+        
+        async function handleTrainerFormSubmit(event) {
             event.preventDefault();
             const form = event.target;
-            const submitButton = form.querySelector('button[type="submit"]');
-            toggleButtonSpinner(submitButton, true);
-            
             const formData = new FormData(form);
             let trainerData = Object.fromEntries(formData.entries());
             const id = trainerData.id;
@@ -490,69 +362,61 @@
 
             if (cvFile && cvFile.size > 0) {
                 const filePath = `public/${Date.now()}-${cvFile.name}`;
-                const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile, { upsert: true });
-                if (uploadError) { showToast('خطأ في رفع الملف.', 'error'); toggleButtonSpinner(submitButton, false); return; }
+                const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile);
+                if (uploadError) { alert('خطأ في رفع الملف.'); return; }
                 const { data: urlData } = supabaseClient.storage.from('trainer-cvs').getPublicUrl(filePath);
                 trainerData.cv_url = urlData.publicUrl;
             }
 
             const sanitizedData = sanitizeData(trainerData);
-            const { error } = id 
-                ? await supabaseClient.from('trainers').update(sanitizedData).eq('id', id)
-                : await supabaseClient.from('trainers').insert([sanitizedData]);
+            let response = id ? await supabaseClient.from('trainers').update(sanitizedData).eq('id', id) : await supabaseClient.from('trainers').insert([sanitizedData]);
             
-            if (error) {
-                showToast(`خطأ في حفظ البيانات: ${error.message}`, 'error');
+            if (response.error) {
+                console.error('Error saving trainer:', response.error); alert('خطأ في حفظ البيانات.');
             } else {
-                showToast('تم الحفظ بنجاح!', 'success');
-                trainerModal.hide();
-                fetchTrainers();
+                alert('تم الحفظ بنجاح!'); trainerModal.hide(); fetchTrainers();
             }
-            toggleButtonSpinner(submitButton, false);
-        });
+        }
+        
+        function handleDeleteTrainer(id, name) {
+            confirmDeletion(async () => {
+                const { error } = await supabaseClient.from('trainers').delete().eq('id', id);
+                if (error) alert('خطأ في الحذف.');
+                else { alert('تم الحذف.'); fetchTrainers(); }
+            }, `هل أنت متأكد من حذف المدرب "${name}"؟`);
+        }
 
-        // TRAINEES
         async function fetchTrainees(searchTerm = '') {
             showLoader('trainee-results');
             let query = supabaseClient.from('trainees').select(`*, trainee_enrollments(courses(name))`).order('full_name');
-            if (searchTerm) query = query.or(`full_name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`);
+            if (searchTerm) query = query.ilike('full_name', `%${searchTerm}%`);
             const { data, error } = await query;
-             if (error) {
-                console.error('Error fetching trainees:', error);
-                showToast('خطأ في جلب بيانات المتدربين', 'error');
-            } else {
-                displayTrainees(data);
-            }
+            if (error) console.error('Error fetching trainees:', error);
+            else displayTrainees(data);
         }
 
         function displayTrainees(trainees) {
             const container = document.getElementById('trainee-results');
             if (!trainees || trainees.length === 0) {
-                container.innerHTML = `<div class="alert alert-info">لا يوجد متدربين يطابقون البحث.</div>`; return;
+                container.innerHTML = `<div class="alert alert-info">لا يوجد متدربين.</div>`; return;
             }
             container.innerHTML = trainees.map(trainee => {
-                const enrolledCourses = trainee.trainee_enrollments.map(e => e.courses.name).join(', ') || 'لم يسجل في أي كورس';
+                const enrolledCourses = trainee.trainee_enrollments.map(e => e.courses.name).join(', ');
                 return `
                 <div class="result-card mb-3">
-                    <div class="card-icon"><i class="fas fa-user-graduate"></i></div>
-                    <div class="card-content">
-                        <h5>${trainee.full_name}</h5>
-                        <p><strong>الهاتف:</strong> ${trainee.phone || 'غير متوفر'}</p>
-                        <p><strong>الكورسات:</strong> ${enrolledCourses}</p>
+                     <div class="card-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openTraineeModal(true, '${trainee.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteTrainee('${trainee.id}', '${trainee.full_name}')"><i class="fas fa-trash"></i></button>
                     </div>
-                    <div class="card-actions">
-                        <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${trainee.id}" data-bs-toggle="modal" data-bs-target="#traineeModal"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${trainee.id}" data-name="${trainee.full_name}"><i class="fas fa-trash"></i></button>
-                    </div>
+                    <h5><i class="fas fa-user-graduate me-2"></i>${trainee.full_name}</h5>
+                    <p><strong>الهاتف:</strong> ${trainee.phone || 'N/A'}</p>
+                    <p><strong>الكورسات:</strong> ${enrolledCourses || 'لا يوجد'}</p>
                 </div>`;
             }).join('');
         }
         
-        const traineeModalEl = document.getElementById('traineeModal');
-        const traineeModal = new bootstrap.Modal(traineeModalEl);
-        traineeModalEl.addEventListener('show.bs.modal', async (event) => {
-            const button = event.relatedTarget;
-            const action = button.getAttribute('data-action');
+        const traineeModal = new bootstrap.Modal(document.getElementById('traineeModal'));
+        async function openTraineeModal(isEdit = false, id = null) {
             const form = document.getElementById('traineeForm');
             form.reset();
             form.querySelector('[name="id"]').value = '';
@@ -570,158 +434,72 @@
                 checklistContainer.innerHTML = 'لا توجد كورسات متاحة.';
             }
 
-            if (action === 'edit') {
-                const id = button.getAttribute('data-id');
+            if (isEdit) {
                 document.getElementById('traineeModalTitle').textContent = 'تعديل بيانات المتدرب';
                 const { data } = await supabaseClient.from('trainees').select('*, trainee_enrollments(course_id)').eq('id', id).single();
-                if (!data) { showToast('لا يمكن تحميل بيانات المتدرب', 'error'); return; }
-                
+                if (!data) return;
                 Object.keys(data).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
                     if (input) input.value = data[key];
                 });
-                data.trainee_enrollments.map(e => e.course_id).forEach(courseId => {
+
+                const enrolledCourseIds = data.trainee_enrollments.map(e => e.course_id);
+                enrolledCourseIds.forEach(courseId => {
                     const checkbox = form.querySelector(`input[name="course_ids"][value="${courseId}"]`);
                     if (checkbox) checkbox.checked = true;
                 });
             } else {
                 document.getElementById('traineeModalTitle').textContent = 'إضافة متدرب جديد';
             }
-        });
-        
-        document.getElementById('traineeForm').addEventListener('submit', async (event) => {
-             event.preventDefault();
-            const form = event.target;
-            const submitButton = form.querySelector('button[type="submit"]');
-            toggleButtonSpinner(submitButton, true);
+            traineeModal.show();
+        }
 
+        async function handleTraineeFormSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
             const formData = new FormData(form);
             const traineeData = {};
-            const selectedCourses = formData.getAll('course_ids');
+            const selectedCourses = [];
             
             formData.forEach((value, key) => {
-                if (key !== 'course_ids') traineeData[key] = value;
+                if (key === 'course_ids') selectedCourses.push(value);
+                else traineeData[key] = value;
             });
 
             const id = traineeData.id;
             delete traineeData.id;
 
             const sanitizedData = sanitizeData(traineeData);
-            const { data: savedTrainee, error } = id
-                ? await supabaseClient.from('trainees').update(sanitizedData).eq('id', id).select().single()
-                : await supabaseClient.from('trainees').insert([sanitizedData]).select().single();
+            let response = id ? await supabaseClient.from('trainees').update(sanitizedData).eq('id', id).select().single() : await supabaseClient.from('trainees').insert([sanitizedData]).select().single();
             
-            if (error) { showToast('خطأ في حفظ المتدرب.', 'error'); toggleButtonSpinner(submitButton, false); return; }
+            if (response.error) { alert('خطأ في حفظ المتدرب.'); return; }
             
-            const traineeId = savedTrainee.id;
-            const { error: deleteError } = await supabaseClient.from('trainee_enrollments').delete().eq('trainee_id', traineeId);
-
+            const traineeId = response.data.id;
+            await supabaseClient.from('trainee_enrollments').delete().eq('trainee_id', traineeId);
+            
             if (selectedCourses.length > 0) {
                 const enrollmentsToInsert = selectedCourses.map(courseId => ({ trainee_id: traineeId, course_id: courseId }));
-                const { error: insertError } = await supabaseClient.from('trainee_enrollments').insert(enrollmentsToInsert);
-                 if (insertError) { showToast('خطأ في تسجيل الكورسات.', 'error'); toggleButtonSpinner(submitButton, false); return; }
+                await supabaseClient.from('trainee_enrollments').insert(enrollmentsToInsert);
             }
             
-            showToast('تم الحفظ بنجاح!', 'success');
-            traineeModal.hide();
-            fetchTrainees();
-            fetchSummaryData();
-            toggleButtonSpinner(submitButton, false);
-        });
-
-        // --- Event Delegation for Clicks on Results ---
-        document.getElementById('myTabContent').addEventListener('click', (event) => {
-            const deleteBtn = event.target.closest('button[data-action="delete"]');
-            if (!deleteBtn) return;
-            
-            const id = deleteBtn.dataset.id;
-            const name = deleteBtn.dataset.name;
-            const parentPanelId = deleteBtn.closest('.tab-pane').id;
-
-            let message = '';
-            let deleteCallback;
-
-            switch(parentPanelId) {
-                case 'trainees-panel':
-                    message = `هل أنت متأكد من حذف المتدرب "${name}"؟ سيتم حذفه من جميع الكورسات.`;
-                    deleteCallback = async () => {
-                        const { error } = await supabaseClient.from('trainees').delete().eq('id', id);
-                        if (error) showToast('خطأ في الحذف.', 'error');
-                        else { showToast('تم الحذف.', 'success'); fetchTrainees(); fetchSummaryData(); }
-                    };
-                    break;
-                case 'trainers-panel':
-                    message = `هل أنت متأكد من حذف المدرب "${name}"؟`;
-                    deleteCallback = async () => {
-                        const { error } = await supabaseClient.from('trainers').delete().eq('id', id);
-                        if (error) showToast('خطأ في الحذف.', 'error');
-                        else { showToast('تم الحذف.', 'success'); fetchTrainers(); }
-                    };
-                    break;
-                case 'schedule-panel':
-                    message = `هل أنت متأكد من حذف موعد "${name}"؟`;
-                     deleteCallback = async () => {
-                        const { error } = await supabaseClient.from('schedules').delete().eq('id', id);
-                        if (error) showToast('خطأ في الحذف.', 'error');
-                        else { showToast('تم الحذف.', 'success'); fetchSchedules(); }
-                    };
-                    break;
-                 case 'summary-panel': // For courses
-                    message = `هل أنت متأكد من حذف كورس "${name}"؟`;
-                    deleteCallback = async () => {
-                        const { error } = await supabaseClient.from('courses').delete().eq('id', id);
-                        if (error) showToast('خطأ في الحذف، قد يكون الكورس مرتبطاً بجدول أو متدربين.', 'error');
-                        else { showToast('تم الحذف.', 'success'); fetchSummaryData(); }
-                    };
-                    break;
-            }
-            
-            if(deleteCallback) {
-                 confirmDeletion(deleteCallback, message);
-            }
-        });
-
-
-        // --- APP INITIALIZATION ---
-        function initializeApp() {
-            fetchSummaryData();
-            fetchTrainees();
-            // fetchTrainers(); // Data is fetched when tab is clicked
-            // fetchSchedules(); // Data is fetched when tab is clicked
-            
-            // Setup tab listeners to fetch data on show
-            const tabs = document.querySelectorAll('#myTab .nav-link');
-            tabs.forEach(tab => {
-                tab.addEventListener('shown.bs.tab', (event) => {
-                    switch(event.target.id) {
-                        case 'summary-tab': fetchSummaryData(); break;
-                        case 'trainees-tab': fetchTrainees(); break;
-                        case 'trainers-tab': fetchTrainers(); break;
-                        case 'schedule-tab': fetchSchedules(); break;
-                    }
-                });
-            });
-
-            // Debounced search listeners
-            document.getElementById('trainee-search-input').addEventListener('input', debounce((e) => fetchTrainees(e.target.value), 300));
-            document.getElementById('trainer-search-input').addEventListener('input', debounce((e) => fetchTrainers(e.target.value), 300));
-            
-            // Attach form submission handlers (they are independent of modals)
-            document.getElementById('trainerForm').addEventListener('submit', handleTrainerFormSubmit);
-            document.getElementById('scheduleForm').addEventListener('submit', handleScheduleFormSubmit);
-
+            alert('تم الحفظ بنجاح!'); traineeModal.hide(); fetchTrainees(); fetchSummaryData();
         }
-
-        document.addEventListener('DOMContentLoaded', checkUser);
         
-        // This is a simplified copy of the original function to prevent breaking the flow. Ideally, it should be refactored like the others.
-        // It's kept separate because it has a lot of unique fields.
+        function handleDeleteTrainee(id, name) {
+             confirmDeletion(async () => {
+                const { error } = await supabaseClient.from('trainees').delete().eq('id', id);
+                if (error) alert('خطأ في الحذف.');
+                else { alert('تم الحذف.'); fetchTrainees(); fetchSummaryData(); }
+            }, `هل أنت متأكد من حذف "${name}"؟`);
+        }
+        
         async function fetchSchedules() {
             showLoader('schedule-results');
             const { data, error } = await supabaseClient.from('schedules').select(`*, courses(name), trainers(full_name)`).order('start_date');
-            if (error) { console.error('Error fetching schedules:', error); showToast('خطأ في جلب الجداول', 'error'); }
+            if (error) console.error('Error fetching schedules:', error);
             else displaySchedules(data);
         }
+        
         function displaySchedules(schedules) {
             const container = document.getElementById('schedule-results');
             if (!schedules || schedules.length === 0) {
@@ -729,31 +507,26 @@
             }
             container.innerHTML = schedules.map(schedule => `
                 <div class="result-card mb-3">
-                     <div class="card-icon"><i class="fas fa-calendar-check"></i></div>
-                     <div class="card-content">
-                        <h5>${schedule.courses ? schedule.courses.name : 'كورس غير محدد'}</h5>
-                        <p><strong>المدرب:</strong> ${schedule.trainers ? schedule.trainers.full_name : 'غير محدد'}</p>
-                        <p><strong>التاريخ:</strong> من ${schedule.start_date || '?'} إلى ${schedule.end_date || '?'}</p>
-                        <p><strong>القاعة:</strong> ${schedule.hall_name || 'غير محددة'}</p>
-                    </div>
                     <div class="card-actions">
-                        <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${schedule.id}" data-bs-toggle="modal" data-bs-target="#scheduleModal"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${schedule.id}" data-name="${schedule.courses ? schedule.courses.name : 'هذا الموعد'}""><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="openScheduleModal(true, '${schedule.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : ''}')"><i class="fas fa-trash"></i></button>
                     </div>
-                </div>`).join('');
+                    <h5><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'N/A'}</h5>
+                    <p><strong>المدرب:</strong> ${schedule.trainers ? schedule.trainers.full_name : 'N/A'}</p>
+                    <p><strong>القاعة:</strong> ${schedule.hall_name || 'N/A'}</p>
+                    <p><strong>التاريخ:</strong> ${schedule.start_date || '?'} - ${schedule.end_date || '?'}</p>
+                </div>
+            `).join('');
         }
-        const scheduleModalEl = document.getElementById('scheduleModal');
-        const scheduleModal = new bootstrap.Modal(scheduleModalEl);
-        scheduleModalEl.addEventListener('show.bs.modal', async (event) => {
-            const button = event.relatedTarget;
-            const action = button.getAttribute('data-action');
+        
+        const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+        async function openScheduleModal(isEdit = false, id = null) {
             const form = document.getElementById('scheduleForm');
             form.reset();
             form.querySelector('[name="id"]').value = '';
             await populateScheduleModalSelects();
 
-            if (action === 'edit') {
-                const id = button.getAttribute('data-id');
+            if (isEdit) {
                 document.getElementById('scheduleModalTitle').textContent = 'تعديل الموعد';
                 const { data } = await supabaseClient.from('schedules').select('*').eq('id', id).single();
                 if (!data) return;
@@ -767,13 +540,12 @@
             } else {
                 document.getElementById('scheduleModalTitle').textContent = 'إضافة موعد جديد';
             }
-        });
+            scheduleModal.show();
+        }
+
         async function handleScheduleFormSubmit(event) {
             event.preventDefault();
             const form = event.target;
-            const submitButton = form.querySelector('button[type="submit"]');
-            toggleButtonSpinner(submitButton, true);
-
             const formData = new FormData(form);
             let scheduleData = Object.fromEntries(formData.entries());
             const id = scheduleData.id;
@@ -783,21 +555,27 @@
             else scheduleData.german_board_applicants = [];
 
             const sanitizedData = sanitizeData(scheduleData);
-            let { error } = id ? await supabaseClient.from('schedules').update(sanitizedData).eq('id', id) : await supabaseClient.from('schedules').insert([sanitizedData]);
+            let response = id ? await supabaseClient.from('schedules').update(sanitizedData).eq('id', id) : await supabaseClient.from('schedules').insert([sanitizedData]);
             
-            if (error) { console.error(error); showToast('خطأ في حفظ الموعد.', 'error'); } 
-            else { showToast('تم الحفظ بنجاح!', 'success'); scheduleModal.hide(); fetchSchedules(); }
-
-            toggleButtonSpinner(submitButton, false);
+            if (response.error) { console.error(response.error); alert('خطأ في حفظ الموعد.'); } 
+            else { alert('تم الحفظ بنجاح!'); scheduleModal.hide(); fetchSchedules(); }
         }
+        
+        function handleDeleteSchedule(id, name) {
+            confirmDeletion(async () => {
+                const { error } = await supabaseClient.from('schedules').delete().eq('id', id);
+                if (error) alert('خطأ في الحذف.');
+                else { alert('تم الحذف.'); fetchSchedules(); }
+            }, `هل أنت متأكد من حذف موعد "${name}"؟`);
+        }
+        
         async function populateScheduleModalSelects() {
-            const courseSelect = document.getElementById('course-select-in-modal');
-            const trainerSelect = document.getElementById('trainer-select-in-modal');
             const { data: courses } = await supabaseClient.from('courses').select('id, name');
             const { data: trainers } = await supabaseClient.from('trainers').select('id, full_name');
-            if (courses) courseSelect.innerHTML = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            if (trainers) trainerSelect.innerHTML = trainers.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
+            if (courses) document.getElementById('course-select-in-modal').innerHTML = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            if (trainers) document.getElementById('trainer-select-in-modal').innerHTML = trainers.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
         }
+        
         async function fetchSummaryData() {
             showLoader('summary-content');
             const { count } = await supabaseClient.from('trainees').select('*', { count: 'exact', head: true });
@@ -815,25 +593,54 @@
                         <h5 class="card-title h4 text-center">إدارة الكورسات</h5>
                         <form id="addCourseForm" class="d-flex mt-3 mb-3">
                             <input type="text" name="name" class="form-control me-2" placeholder="اسم الكورس الجديد" required>
-                            <button type="submit" class="btn btn-success flex-shrink-0"><span class="spinner-border spinner-border-sm d-none"></span> <span>إضافة</span></button>
+                            <button type="submit" class="btn btn-success flex-shrink-0">إضافة</button>
                         </form>
                         <ul id="coursesList" class="list-group list-group-flush">
-                            ${courses && courses.length > 0 ? courses.map(c => `<li class="list-group-item d-flex justify-content-between align-items-center">${c.name}<button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${c.id}" data-name="${c.name}"><i class="fas fa-trash"></i></button></li>`).join('') : '<li class="list-group-item">لا توجد كورسات.</li>'}
+                            ${courses && courses.length > 0 ? courses.map(c => `<li class="list-group-item d-flex justify-content-between align-items-center">${c.name}<button class="btn btn-sm btn-outline-danger" onclick="handleDeleteCourse('${c.id}', '${c.name}')"><i class="fas fa-trash"></i></button></li>`).join('') : '<li class="list-group-item">لا توجد كورسات.</li>'}
                         </ul>
                     </div></div>
                 </div>`;
-            document.getElementById('addCourseForm').addEventListener('submit', async (event) => {
-                event.preventDefault();
-                const form = event.target;
-                const button = form.querySelector('button');
-                toggleButtonSpinner(button, true);
-                const courseName = new FormData(form).get('name');
-                const { error } = await supabaseClient.from('courses').insert([{ name: courseName }]);
-                if (error) showToast(`خطأ: ${error.message}`, 'error');
-                else { showToast('تمت الإضافة!', 'success'); form.reset(); fetchSummaryData(); }
-                toggleButtonSpinner(button, false);
-            });
+            document.getElementById('addCourseForm').addEventListener('submit', handleAddCourse);
         }
+
+        async function handleAddCourse(event) {
+            event.preventDefault();
+            const form = event.target;
+            const courseName = new FormData(form).get('name');
+            const { error } = await supabaseClient.from('courses').insert([{ name: courseName }]);
+            if (error) alert(`خطأ: ${error.message}`);
+            else { alert('تمت الإضافة!'); form.reset(); fetchSummaryData(); }
+        }
+        
+        function handleDeleteCourse(id, name) {
+            confirmDeletion(async () => {
+                const { error } = await supabaseClient.from('courses').delete().eq('id', id);
+                if (error) alert('خطأ في الحذف، قد يكون الكورس مرتبطاً بجدول.');
+                else { alert('تم الحذف.'); fetchSummaryData(); }
+            }, `هل أنت متأكد من حذف كورس "${name}"؟`);
+        }
+
+        // --- APP INITIALIZATION ---
+        function initializeApp() {
+            fetchSummaryData();
+            fetchTrainees();
+            fetchTrainers();
+            fetchSchedules();
+
+            document.getElementById('trainee-search-btn').addEventListener('click', () => fetchTrainees(document.getElementById('trainee-search-input').value));
+            document.getElementById('trainer-search-btn').addEventListener('click', () => fetchTrainers(document.getElementById('trainer-search-input').value));
+            
+            document.getElementById('addTrainerBtn').addEventListener('click', () => openTrainerModal());
+            document.getElementById('addTraineeBtn').addEventListener('click', () => openTraineeModal());
+            document.getElementById('addScheduleBtn').addEventListener('click', () => openScheduleModal());
+
+            document.getElementById('traineeForm').addEventListener('submit', handleTraineeFormSubmit);
+            document.getElementById('trainerForm').addEventListener('submit', handleTrainerFormSubmit);
+            document.getElementById('scheduleForm').addEventListener('submit', handleScheduleFormSubmit);
+        }
+
+        document.addEventListener('DOMContentLoaded', checkUser);
+
     </script>
 </body>
 </html>
