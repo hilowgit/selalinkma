@@ -18,14 +18,14 @@
 
     <style>
         :root {
-            --primary-color: #0d6efd;
-            --light-primary: #f0f5ff;
-            --background-color: #f4f7fc;
-            --card-bg: #ffffff;
-            --text-color: #4a5568;
-            --heading-color: #2d3748;
-            --border-color: #e2e8f0;
-            --danger-color: #dc3545;
+            --primary-color: #3B82F6;
+            --light-primary: #EFF6FF;
+            --background-color: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --text-color: #4B5563;
+            --heading-color: #1F2937;
+            --border-color: #E5E7EB;
+            --danger-color: #EF4444;
         }
         body {
             font-family: 'Tajawal', sans-serif;
@@ -34,15 +34,15 @@
             transition: background-color 0.3s;
         }
         #app-container, #auth-container {
-            display: none; /* Hidden by default */
+            display: none;
         }
         .main-container {
             margin-top: 2rem;
             margin-bottom: 2rem;
-            padding: 2rem;
+            padding: 2.5rem;
             background-color: var(--card-bg);
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
             border: 1px solid var(--border-color);
         }
         .auth-form-container {
@@ -50,16 +50,23 @@
             margin: 5rem auto;
         }
         .app-header {
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .nav-tabs .nav-link.active {
-            color: var(--primary-color);
-            background-color: var(--light-primary);
-            border-bottom: 3px solid var(--primary-color);
+        .nav-pills .nav-link {
+            color: var(--text-color);
+            font-weight: 500;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-pills .nav-link.active {
+            color: #fff;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 14px 0 rgba(0, 118, 255, 0.39);
         }
         .panel-header {
             display: flex;
@@ -76,10 +83,15 @@
         }
         .result-card {
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 1.5rem;
-            background-color: #fcfdff;
+            background-color: var(--card-bg);
             position: relative;
+            transition: all 0.2s ease-in-out;
+        }
+        .result-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 20px 0 rgba(0,0,0,0.05);
         }
         .card-actions {
             position: absolute;
@@ -89,25 +101,29 @@
             gap: 0.5rem;
         }
         .card-actions .btn {
-            width: 35px;
-            height: 35px;
+            width: 38px;
+            height: 38px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
         }
-        .modal-header {
-            background-color: var(--primary-color);
-            color: white;
+        .modal .modal-header {
+            background-color: var(--light-primary);
+            color: var(--heading-color);
+            border-bottom: 1px solid var(--border-color);
         }
-        .modal-header .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
         .form-section-title {
             font-weight: bold;
+            font-size: 1.1rem;
             margin-top: 1.5rem;
             margin-bottom: 1rem;
-            color: var(--primary-color);
+            color: var(--heading-color);
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.75rem;
+        }
+        .form-section-title:first-of-type {
+            margin-top: 0;
         }
         .loader { text-align: center; padding: 2rem; }
     </style>
@@ -140,9 +156,9 @@
     <!-- Main App Container -->
     <div id="app-container" class="container main-container">
         <header class="app-header">
-            <div class="text-center">
-                <h1 class="display-5 fw-bold">لوحة تحكم المشرفين</h1>
-                <p class="h5 text-muted">مركز صلة التدريبي الدولي</p>
+            <div>
+                <h1 class="h4 fw-bold m-0">مركز صلة التدريبي</h1>
+                <p class="text-muted m-0">لوحة تحكم المشرفين</p>
             </div>
             <div>
                  <button id="logout-btn" class="btn btn-outline-danger">
@@ -153,8 +169,8 @@
 
         <main>
             <!-- Navigation Tabs -->
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation"><button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary-panel" type="button"><i class="fas fa-chart-line me-2"></i>الملخصات</button></li>
+            <ul class="nav nav-pills" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation"><button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary-panel" type="button"><i class="fas fa-chart-pie me-2"></i>الملخصات</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="trainees-tab" data-bs-toggle="tab" data-bs-target="#trainees-panel" type="button"><i class="fas fa-user-graduate me-2"></i>المتدربين</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="trainers-tab" data-bs-toggle="tab" data-bs-target="#trainers-panel" type="button"><i class="fas fa-chalkboard-teacher me-2"></i>المدربين</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-panel" type="button"><i class="fas fa-calendar-alt me-2"></i>الجدولة</button></li>
@@ -163,54 +179,18 @@
             <!-- Tab Content -->
             <div class="tab-content pt-4" id="myTabContent">
                 
-                <!-- Summary Panel -->
-                <div class="tab-pane fade show active p-3" id="summary-panel" role="tabpanel">
-                    <h4 class="mb-4">ملخص الأداء العام</h4>
-                    <div id="summary-content" class="row"></div>
-                </div>
-
-                <!-- Trainees Panel -->
-                <div class="tab-pane fade p-3" id="trainees-panel" role="tabpanel">
-                    <div class="panel-header">
-                        <h4 class="m-0">قاعدة بيانات المتدربين</h4>
-                        <button id="addTraineeBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة متدرب جديد</button>
-                    </div>
-                    <div class="input-group mb-4">
-                        <input type="text" class="form-control" id="trainee-search-input" placeholder="أدخل اسم المتدرب للبحث...">
-                        <button class="btn btn-outline-primary" type="button" id="trainee-search-btn"><i class="fas fa-search"></i></button>
-                    </div>
-                    <div id="trainee-results" class="mt-4"></div>
-                </div>
-
-                <!-- Trainers Panel -->
-                <div class="tab-pane fade p-3" id="trainers-panel" role="tabpanel">
-                    <div class="panel-header">
-                        <h4 class="m-0">قاعدة بيانات المدربين</h4>
-                        <button id="addTrainerBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة مدرب جديد</button>
-                    </div>
-                    <div class="input-group mb-4">
-                        <input type="text" class="form-control" id="trainer-search-input" placeholder="أدخل اسم المدرب للبحث...">
-                        <button class="btn btn-outline-primary" type="button" id="trainer-search-btn"><i class="fas fa-search"></i></button>
-                    </div>
-                    <div id="trainer-results" class="mt-4"></div>
-                </div>
-
-                <!-- Schedule Panel -->
-                <div class="tab-pane fade p-3" id="schedule-panel" role="tabpanel">
-                    <div class="panel-header">
-                        <h4 class="m-0">جدول مواعيد الكورسات</h4>
-                        <button id="addScheduleBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة موعد جديد</button>
-                    </div>
-                    <div id="schedule-results" class="mt-4"></div>
-                </div>
+                <div class="tab-pane fade show active p-3" id="summary-panel" role="tabpanel"><div id="summary-content" class="row"></div></div>
+                <div class="tab-pane fade p-3" id="trainees-panel" role="tabpanel"><div class="panel-header"><h4 class="m-0">قاعدة بيانات المتدربين</h4><button id="addTraineeBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة متدرب</button></div><div class="input-group mb-4"><input type="text" class="form-control" id="trainee-search-input" placeholder="أدخل اسم المتدرب للبحث..."><button class="btn btn-outline-primary" type="button" id="trainee-search-btn"><i class="fas fa-search"></i></button></div><div id="trainee-results" class="mt-4"></div></div>
+                <div class="tab-pane fade p-3" id="trainers-panel" role="tabpanel"><div class="panel-header"><h4 class="m-0">قاعدة بيانات المدربين</h4><button id="addTrainerBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة مدرب</button></div><div class="input-group mb-4"><input type="text" class="form-control" id="trainer-search-input" placeholder="أدخل اسم المدرب للبحث..."><button class="btn btn-outline-primary" type="button" id="trainer-search-btn"><i class="fas fa-search"></i></button></div><div id="trainer-results" class="mt-4"></div></div>
+                <div class="tab-pane fade p-3" id="schedule-panel" role="tabpanel"><div class="panel-header"><h4 class="m-0">جدول مواعيد الكورسات</h4><button id="addScheduleBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة موعد</button></div><div id="schedule-results" class="mt-4"></div></div>
             </div>
         </main>
     </div>
 
     <!-- All Modals -->
-    <div class="modal fade" id="traineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="traineeForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="traineeModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المتدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-md-6"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-12"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div></div><h6 class="form-section-title">تسجيل الكورسات</h6><div id="traineeCoursesChecklist" class="row g-2"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
-    <div class="modal fade" id="trainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="trainerForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="trainerModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات المدرب</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" name="specialty" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" name="cv_file" class="form-control" accept=".pdf"><small id="currentCv" class="form-text text-muted"></small></div></div><h6 class="form-section-title">تفاصيل التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" name="contract_start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" name="contract_end_date" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
-    <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="row g-3"><div class="col-12"><label class="form-label">اسم الكورس</label><select name="course_id" id="course-select-in-modal" class="form-select" required></select></div><div class="col-12"><label class="form-label">اسم المدرب</label><select name="trainer_id" id="trainer-select-in-modal" class="form-select" required></select></div><div class="col-md-6"><label class="form-label">اسم القاعة</label><input type="text" name="hall_name" class="form-control"></div><div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ البدء</label><input type="date" name="start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ الانتهاء</label><input type="date" name="end_date" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت البدء</label><input type="time" name="start_time" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت الانتهاء</label><input type="time" name="end_time" class="form-control"></div><div class="col-12"><label class="form-label">أيام الكورس</label><input type="text" name="course_days" class="form-control" placeholder="الأحد - الثلاثاء - الخميس"></div><div class="col-12"><label class="form-label">متقدمون للبورد الألماني (افصل بفاصلة)</label><input type="text" name="german_board_applicants" class="form-control"></div><div class="col-12"><label class="form-label">خطة المسار</label><textarea name="course_plan" class="form-control" rows="3"></textarea></div><div class="col-12"><label class="form-label">المواد المطلوبة</label><textarea name="required_materials" class="form-control" rows="2"></textarea></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
+    <div class="modal fade" id="traineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="traineeForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="traineeModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">البيانات الشخصية</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div></div><h6 class="form-section-title">تسجيل الكورسات</h6><div id="traineeCoursesChecklist" class="row g-2"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
+    <div class="modal fade" id="trainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="trainerForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="trainerModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">البيانات الشخصية</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" name="specialty" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" name="cv_file" class="form-control" accept=".pdf"><small id="currentCv" class="form-text text-primary"></small></div></div><h6 class="form-section-title">بيانات التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" name="contract_start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" name="contract_end_date" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
+    <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات الكورس</h6><div class="row g-3"><div class="col-12"><label class="form-label">اختر الكورس</label><select name="course_id" id="course-select-in-modal" class="form-select" required></select></div><div class="col-12"><label class="form-label">اختر المدرب</label><select name="trainer_id" id="trainer-select-in-modal" class="form-select" required></select></div><div class="col-md-6"><label class="form-label">اسم القاعة</label><input type="text" name="hall_name" class="form-control"></div><div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control"></div></div><h6 class="form-section-title">التوقيت</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ البدء</label><input type="date" name="start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ الانتهاء</label><input type="date" name="end_date" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت البدء</label><input type="time" name="start_time" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت الانتهاء</label><input type="time" name="end_time" class="form-control"></div><div class="col-12"><label class="form-label">أيام الكورس</label><input type="text" name="course_days" class="form-control" placeholder="الأحد - الثلاثاء - الخميس"></div></div><h6 class="form-section-title">تفاصيل إضافية</h6><div class="row g-3"><div class="col-12"><label class="form-label">متقدمون للبورد الألماني (افصل بفاصلة)</label><input type="text" name="german_board_applicants" class="form-control"></div><div class="col-12"><label class="form-label">خطة المسار</label><textarea name="course_plan" class="form-control" rows="3"></textarea></div><div class="col-12"><label class="form-label">المواد المطلوبة</label><textarea name="required_materials" class="form-control" rows="2"></textarea></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
     <div class="modal fade" id="confirmModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p id="confirmModalText"></p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div></div></div></div>
 
     <!-- Bootstrap JS Bundle -->
@@ -220,17 +200,12 @@
     
     <script>
         // =================================================================================
-        // !! هام جداً: قم باستبدال القيم التالية بالبيانات الخاصة بمشروعك على Supabase !!
+        // !! تم وضع بيانات الاتصال الخاصة بك هنا !!
         // =================================================================================
         const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0';
         // =================================================================================
         
-        if (SUPABASE_URL.includes('YOUR_SUPABASE_URL') || SUPABASE_KEY.includes('YOUR_SUPABASE_ANON_KEY')) {
-            document.body.innerHTML = `<div class="container mt-5"><div class="alert alert-danger text-center"><h4>خطأ في الإعداد!</h4><p>يرجى فتح ملف <code>index.html</code> وتحديث قيم <code>SUPABASE_URL</code> و <code>SUPABASE_KEY</code> بالبيانات الصحيحة من مشروعك على Supabase.</p></div></div>`;
-            throw new Error("Supabase credentials are not set.");
-        }
-
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         const authContainer = document.getElementById('auth-container');
@@ -245,9 +220,7 @@
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-            
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
             if (error) {
                 authErrorDiv.textContent = 'البريد الإلكتروني أو كلمة السر غير صحيحة.';
                 authErrorDiv.classList.remove('d-none');
@@ -301,7 +274,6 @@
         };
 
         // --- CORE APP LOGIC ---
-        // Functions for trainers, trainees, schedules, summary...
         async function fetchTrainers(searchTerm = '') {
             showLoader('trainer-results');
             let query = supabaseClient.from('trainers').select('*').order('full_name');
@@ -323,8 +295,9 @@
                         <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteTrainer('${trainer.id}', '${trainer.full_name}')"><i class="fas fa-trash"></i></button>
                     </div>
                     <h5><i class="fas fa-user-tie me-2"></i>${trainer.full_name}</h5>
-                    <p><strong>الهاتف:</strong> ${trainer.phone || 'N/A'}</p>
-                    <p><strong>السيرة الذاتية:</strong> ${trainer.cv_url ? `<a href="${trainer.cv_url}" target="_blank">عرض</a>` : 'لا يوجد'}</p>
+                    <p class="mb-1"><i class="fas fa-phone-alt me-2 text-muted"></i>${trainer.phone || 'N/A'}</p>
+                    <p class="mb-1"><i class="fas fa-briefcase me-2 text-muted"></i>${trainer.specialty || 'N/A'}</p>
+                    <p class="mb-0"><i class="fas fa-file-pdf me-2 text-muted"></i>${trainer.cv_url ? `<a href="${trainer.cv_url}" target="_blank">عرض السيرة الذاتية</a>` : 'لا يوجد'}</p>
                 </div>
             `).join('');
         }
@@ -401,7 +374,7 @@
                 container.innerHTML = `<div class="alert alert-info">لا يوجد متدربين.</div>`; return;
             }
             container.innerHTML = trainees.map(trainee => {
-                const enrolledCourses = trainee.trainee_enrollments.map(e => e.courses.name).join(', ');
+                const enrolledCourses = trainee.trainee_enrollments.length > 0 ? trainee.trainee_enrollments.map(e => `<span class="badge bg-secondary">${e.courses.name}</span>`).join(' ') : 'لا يوجد';
                 return `
                 <div class="result-card mb-3">
                      <div class="card-actions">
@@ -409,8 +382,8 @@
                         <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteTrainee('${trainee.id}', '${trainee.full_name}')"><i class="fas fa-trash"></i></button>
                     </div>
                     <h5><i class="fas fa-user-graduate me-2"></i>${trainee.full_name}</h5>
-                    <p><strong>الهاتف:</strong> ${trainee.phone || 'N/A'}</p>
-                    <p><strong>الكورسات:</strong> ${enrolledCourses || 'لا يوجد'}</p>
+                    <p class="mb-1"><i class="fas fa-phone-alt me-2 text-muted"></i>${trainee.phone || 'N/A'}</p>
+                    <p class="mb-0"><i class="fas fa-book-open me-2 text-muted"></i><strong>الكورسات:</strong> ${enrolledCourses}</p>
                 </div>`;
             }).join('');
         }
@@ -512,9 +485,9 @@
                         <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : ''}')"><i class="fas fa-trash"></i></button>
                     </div>
                     <h5><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'N/A'}</h5>
-                    <p><strong>المدرب:</strong> ${schedule.trainers ? schedule.trainers.full_name : 'N/A'}</p>
-                    <p><strong>القاعة:</strong> ${schedule.hall_name || 'N/A'}</p>
-                    <p><strong>التاريخ:</strong> ${schedule.start_date || '?'} - ${schedule.end_date || '?'}</p>
+                    <p class="mb-1"><i class="fas fa-chalkboard-teacher me-2 text-muted"></i>${schedule.trainers ? schedule.trainers.full_name : 'N/A'}</p>
+                    <p class="mb-1"><i class="fas fa-map-marker-alt me-2 text-muted"></i>${schedule.hall_name || 'N/A'}</p>
+                    <p class="mb-0"><i class="far fa-clock me-2 text-muted"></i>${schedule.start_date || '?'} - ${schedule.end_date || '?'}</p>
                 </div>
             `).join('');
         }
