@@ -97,7 +97,6 @@
         .card-actions {
             position: absolute; top: 1rem; left: 1rem; display: flex; gap: 0.5rem;
         }
-        /* --- MODIFIED CSS --- */
         .card-header-flex {
             display: flex;
             justify-content: space-between;
@@ -109,6 +108,14 @@
         }
         .status-badge {
             flex-shrink: 0; 
+        }
+        /* Style for disabled form elements */
+        .modal-body .form-control:disabled,
+        .modal-body .form-select:disabled,
+        .modal-body .selected-tag button:disabled {
+            background-color: #e9ecef;
+            opacity: 0.7;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -172,9 +179,9 @@
     <div class="modal fade" id="trainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="trainerForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="trainerModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">البيانات الشخصية</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" name="specialty" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" name="cv_file" class="form-control" accept=".pdf"><small id="currentCv" class="form-text text-primary"></small></div></div><h6 class="form-section-title">بيانات التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" name="contract_start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" name="contract_end_date" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
     <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات الكورس</h6><div class="row g-3"><div class="col-12"><label class="form-label">اختر الكورس</label><select name="course_id" id="course-select-in-modal" class="form-select" required></select></div><div class="col-12"><label class="form-label">اختر المدرب</label><select name="trainer_id" id="trainer-select-in-modal" class="form-select" required></select></div><div class="col-md-6"><label class="form-label">اسم القاعة</label><input type="text" name="hall_name" class="form-control"></div><div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control"></div></div><h6 class="form-section-title">التوقيت</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ البدء</label><input type="date" name="start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ الانتهاء</label><input type="date" name="end_date" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت البدء</label><input type="time" name="start_time" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت الانتهاء</label><input type="time" name="end_time" class="form-control"></div><div class="col-12"><label class="form-label">أيام الكورس</label><input type="text" name="course_days" class="form-control" placeholder="الأحد - الثلاثاء - الخميس"></div></div>
     
-    <div class="form-check form-switch mt-3">
+    <div class="form-check form-switch mt-3 p-3 border rounded">
         <input class="form-check-input" type="checkbox" role="switch" id="courseStatus" name="status">
-        <label class="form-check-label" for="courseStatus">الكورس منتهي</label>
+        <label class="form-check-label" for="courseStatus">الكورس منتهي (سيتم قفل التعديلات عند تفعيل هذا الخيار)</label>
     </div>
 
     <h6 class="form-section-title">الطلاب المسجلون في الكورس</h6>
@@ -498,9 +505,8 @@
         
         async function fetchSchedules(searchTerm = '') {
             showLoader('schedule-results');
-            // Use a foreign table join to filter by course name
             let query = supabaseClient.from('schedules').select(`*, courses!inner(name), trainers(full_name)`)
-                .order('status', { ascending: true, nullsFirst: false }) // 'active' comes before 'completed'
+                .order('status', { ascending: true, nullsFirst: false }) 
                 .order('start_date', { ascending: false });
 
             if (searchTerm) {
@@ -548,6 +554,20 @@
         
         const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
         
+        function toggleScheduleFormLock(isLocked) {
+            const form = document.getElementById('scheduleForm');
+            const elementsToLock = form.querySelectorAll('.modal-body input:not(#courseStatus), .modal-body select, .modal-body textarea, .modal-body .selected-tag button');
+
+            elementsToLock.forEach(el => {
+                el.disabled = isLocked;
+            });
+            
+            const traineeSearchInput = document.getElementById('schedule-trainee-search-input');
+            if (traineeSearchInput) {
+                traineeSearchInput.disabled = isLocked;
+            }
+        }
+
         async function openScheduleModal(isEdit = false, id = null) {
             const form = document.getElementById('scheduleForm');
             form.reset();
@@ -557,7 +577,7 @@
             document.getElementById('schedule-trainee-search-input').value = '';
 
             await populateScheduleModalSelects();
-
+            
             if (isEdit) {
                 document.getElementById('scheduleModalTitle').textContent = 'تعديل الموعد';
                 const { data: scheduleData, error: scheduleError } = await supabaseClient.from('schedules').select('*').eq('id', id).single();
@@ -585,8 +605,10 @@
                         });
                     }
                 }
+                toggleScheduleFormLock(scheduleData.status === 'completed');
             } else {
                 document.getElementById('scheduleModalTitle').textContent = 'إضافة موعد جديد';
+                toggleScheduleFormLock(false); // Unlock for new entries
             }
             
             renderScheduleSelectedTrainees();
@@ -601,7 +623,6 @@
             const id = scheduleData.id;
             delete scheduleData.id;
             
-            // Handle checkbox value for status
             scheduleData.status = form.querySelector('[name="status"]').checked ? 'completed' : 'active';
 
             if (scheduleData.german_board_applicants) scheduleData.german_board_applicants = scheduleData.german_board_applicants.split(',').map(s => s.trim());
@@ -615,26 +636,29 @@
             
             if (scheduleError) { console.error(scheduleError); alert('خطأ في حفظ الموعد.'); return; }
 
-            const courseId = savedSchedule.course_id;
-            if (!courseId) {
-                alert('تم حفظ الموعد، ولكن لم يتم تحديد كورس لتحديث قائمة الطلاب.');
-                scheduleModal.hide(); fetchSchedules(); return;
-            }
+            // Only update enrollments if the course is not completed
+            if (savedSchedule.status !== 'completed') {
+                const courseId = savedSchedule.course_id;
+                if (!courseId) {
+                    alert('تم حفظ الموعد، ولكن لم يتم تحديد كورس لتحديث قائمة الطلاب.');
+                    scheduleModal.hide(); fetchSchedules(); return;
+                }
 
-            const { data: currentEnrollmentsData } = await supabaseClient.from('trainee_enrollments').select('trainee_id').eq('course_id', courseId);
-            const currentTraineeIds = new Set(currentEnrollmentsData.map(e => e.trainee_id));
-            const newTraineeIds = new Set(scheduleSelectedTrainees.keys());
+                const { data: currentEnrollmentsData } = await supabaseClient.from('trainee_enrollments').select('trainee_id').eq('course_id', courseId);
+                const currentTraineeIds = new Set(currentEnrollmentsData.map(e => e.trainee_id));
+                const newTraineeIds = new Set(scheduleSelectedTrainees.keys());
 
-            const traineesToAdd = [...newTraineeIds].filter(tid => !currentTraineeIds.has(tid));
-            const traineesToRemove = [...currentTraineeIds].filter(tid => !newTraineeIds.has(tid));
+                const traineesToAdd = [...newTraineeIds].filter(tid => !currentTraineeIds.has(tid));
+                const traineesToRemove = [...currentTraineeIds].filter(tid => !newTraineeIds.has(tid));
 
-            if (traineesToRemove.length > 0) {
-                await supabaseClient.from('trainee_enrollments').delete().eq('course_id', courseId).in('trainee_id', traineesToRemove);
-            }
-            
-            if (traineesToAdd.length > 0) {
-                const enrollmentsToInsert = traineesToAdd.map(traineeId => ({ course_id: courseId, trainee_id: traineeId }));
-                await supabaseClient.from('trainee_enrollments').insert(enrollmentsToInsert);
+                if (traineesToRemove.length > 0) {
+                    await supabaseClient.from('trainee_enrollments').delete().eq('course_id', courseId).in('trainee_id', traineesToRemove);
+                }
+                
+                if (traineesToAdd.length > 0) {
+                    const enrollmentsToInsert = traineesToAdd.map(traineeId => ({ course_id: courseId, trainee_id: traineeId }));
+                    await supabaseClient.from('trainee_enrollments').insert(enrollmentsToInsert);
+                }
             }
 
             alert('تم الحفظ بنجاح!');
@@ -854,6 +878,10 @@
             document.getElementById('course-search-input').addEventListener('keyup', (e) => renderCourseSearchResults(e.target.value));
             document.getElementById('schedule-trainee-search-input').addEventListener('keyup', (e) => renderScheduleTraineeSearchResults(e.target.value));
             
+            document.getElementById('courseStatus').addEventListener('change', function() {
+                toggleScheduleFormLock(this.checked);
+            });
+
             document.getElementById('course-select-in-modal').addEventListener('change', async (e) => {
                 const courseId = e.target.value;
                 scheduleSelectedTrainees.clear(); 
