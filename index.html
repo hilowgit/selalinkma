@@ -97,8 +97,18 @@
         .card-actions {
             position: absolute; top: 1rem; left: 1rem; display: flex; gap: 0.5rem;
         }
+        /* --- MODIFIED CSS --- */
+        .card-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem; 
+        }
+        .card-header-flex h5 {
+            margin-bottom: 0; 
+        }
         .status-badge {
-            position: absolute; top: 1.25rem; right: 1.5rem;
+            flex-shrink: 0; 
         }
     </style>
 </head>
@@ -520,13 +530,15 @@
 
                 return `
                 <div class="result-card mb-3 ${isCompleted ? 'completed' : ''}">
-                    ${statusBadge}
                     <div class="card-actions d-flex flex-column gap-2">
                         <button class="btn btn-sm btn-success" onclick="openAttendanceModal('${schedule.id}', '${schedule.courses.name}')" title="أخذ التفقد"><i class="fas fa-user-check"></i></button>
                         <button class="btn btn-sm btn-primary" onclick="openScheduleModal(true, '${schedule.id}')" title="تعديل الموعد"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-sm btn-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : ''}')" title="حذف الموعد"><i class="fas fa-trash"></i></button>
                     </div>
-                    <h5><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'N/A'}</h5>
+                    <div class="card-header-flex">
+                        <h5><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'N/A'}</h5>
+                        ${statusBadge}
+                    </div>
                     <p class="mb-1"><i class="fas fa-chalkboard-teacher me-2 text-muted"></i>${schedule.trainers ? schedule.trainers.full_name : 'N/A'}</p>
                     <p class="mb-1"><i class="fas fa-map-marker-alt me-2 text-muted"></i>${schedule.hall_name || 'N/A'}</p>
                     <p class="mb-0"><i class="far fa-clock me-2 text-muted"></i>${schedule.start_date || '?'} - ${schedule.end_date || '?'}</p>
