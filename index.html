@@ -94,20 +94,9 @@
             max-height: 70vh; /* 70% من ارتفاع الشاشة */
             overflow-y: auto;    /* إضافة شريط تمرير عمودي عند الحاجة */
         }
-        .card-actions {
-            position: absolute; top: 1rem; left: 1rem; display: flex; gap: 0.5rem;
-        }
-        .card-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem; 
-        }
-        .card-header-flex h5 {
-            margin-bottom: 0; 
-        }
         .status-badge {
-            flex-shrink: 0; 
+            flex-shrink: 0;
+            margin-inline-start: 0.75rem;
         }
         /* Style for disabled form elements */
         .modal-body .form-control:disabled,
@@ -543,7 +532,8 @@
         function displaySchedules(schedules) {
             const container = document.getElementById('schedule-results');
             if (!schedules || schedules.length === 0) {
-                container.innerHTML = `<div class="alert alert-info">لا توجد مواعيد مجدولة تطابق البحث.</div>`; return;
+                container.innerHTML = `<div class="alert alert-info">لا توجد مواعيد مجدولة تطابق البحث.</div>`;
+                return;
             }
             container.innerHTML = schedules.map(schedule => {
                 const isCompleted = schedule.status === 'completed';
@@ -553,20 +543,27 @@
 
                 return `
                 <div class="result-card mb-3 ${isCompleted ? 'completed' : ''}">
-                    <div class="card-actions d-flex flex-column gap-2">
-                        <button class="btn btn-sm btn-success" onclick="openAttendanceModal('${schedule.id}', '${schedule.courses.name}')" title="أخذ التفقد"><i class="fas fa-user-check"></i></button>
-                        <button class="btn btn-sm btn-primary" onclick="openScheduleModal(true, '${schedule.id}')" title="تعديل الموعد"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : ''}')" title="حذف الموعد"><i class="fas fa-trash"></i></button>
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <!-- Main Content -->
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="m-0"><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'N/A'}</h5>
+                                ${statusBadge}
+                            </div>
+                            <p class="mb-1 text-muted small"><i class="fas fa-chalkboard-teacher me-2"></i>${schedule.trainers ? schedule.trainers.full_name : 'N/A'}</p>
+                            <p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt me-2"></i>${schedule.hall_name || 'N/A'}</p>
+                            <p class="mb-0 text-muted small"><i class="far fa-clock me-2"></i>${schedule.start_date || '?'} - ${schedule.end_date || '?'}</p>
+                        </div>
+                        <!-- Action Buttons -->
+                        <div class="d-flex flex-column gap-2 flex-shrink-0">
+                            <button class="btn btn-sm btn-success" onclick="openAttendanceModal('${schedule.id}', '${schedule.courses.name}')" title="أخذ التفقد"><i class="fas fa-user-check"></i></button>
+                            <button class="btn btn-sm btn-primary" onclick="openScheduleModal(true, '${schedule.id}')" title="تعديل الموعد"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : ''}')" title="حذف الموعد"><i class="fas fa-trash"></i></button>
+                        </div>
                     </div>
-                    <div class="card-header-flex">
-                        <h5><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'N/A'}</h5>
-                        ${statusBadge}
-                    </div>
-                    <p class="mb-1"><i class="fas fa-chalkboard-teacher me-2 text-muted"></i>${schedule.trainers ? schedule.trainers.full_name : 'N/A'}</p>
-                    <p class="mb-1"><i class="fas fa-map-marker-alt me-2 text-muted"></i>${schedule.hall_name || 'N/A'}</p>
-                    <p class="mb-0"><i class="far fa-clock me-2 text-muted"></i>${schedule.start_date || '?'} - ${schedule.end_date || '?'}</p>
                 </div>
-            `}).join('');
+            `;
+            }).join('');
         }
         
         const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
@@ -866,7 +863,7 @@
                  return;
             }
             listContainer.innerHTML = '';
-            for (const [id, name] of scheduleSelectedTrainees.entries()) {
+            for (const [id, name] of selectedCourses.entries()) {
                 listContainer.innerHTML += `<div class="selected-tag" data-id="${id}">${name}<button type="button" onclick="removeTraineeFromSchedule('${id}')">&times;</button></div>`;
             }
         }
