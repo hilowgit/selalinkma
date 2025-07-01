@@ -82,9 +82,12 @@
             background: none; border: none; font-size: 1.2rem;
             margin-right: 0.5rem; color: var(--primary-color);
         }
-          .modal-body {
-           max-height: 70vh; /* 70% من ارتفاع الشاشة */
-           overflow-y: auto;   /* إضافة شريط تمرير عمودي عند الحاجة */
+         .modal-body {
+            max-height: 70vh; /* 70% من ارتفاع الشاشة */
+            overflow-y: auto;    /* إضافة شريط تمرير عمودي عند الحاجة */
+        }
+        .card-actions {
+            position: absolute; top: 1rem; left: 1rem; display: flex; gap: 0.5rem;
         }
     </style>
 </head>
@@ -126,9 +129,9 @@
             <!-- Tab Content -->
             <div class="tab-content pt-4" id="myTabContent">
                 <div class="tab-pane fade show active p-3" id="summary-panel" role="tabpanel"><div id="summary-content" class="row"></div></div>
-                <div class="tab-pane fade p-3" id="trainees-panel" role="tabpanel"><div class="panel-header"><h4 class="m-0">قاعدة بيانات المتدربين</h4><button id="addTraineeBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة متدرب</button></div><div class="input-group mb-4"><input type="text" class="form-control" id="trainee-search-input" placeholder="أدخل اسم المتدرب للبحث..."><button class="btn btn-outline-primary" type="button" id="trainee-search-btn"><i class="fas fa-search"></i></button></div><div id="trainee-results" class="mt-4"></div></div>
-                <div class="tab-pane fade p-3" id="trainers-panel" role="tabpanel"><div class="panel-header"><h4 class="m-0">قاعدة بيانات المدربين</h4><button id="addTrainerBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة مدرب</button></div><div class="input-group mb-4"><input type="text" class="form-control" id="trainer-search-input" placeholder="أدخل اسم المدرب للبحث..."><button class="btn btn-outline-primary" type="button" id="trainer-search-btn"><i class="fas fa-search"></i></button></div><div id="trainer-results" class="mt-4"></div></div>
-                <div class="tab-pane fade p-3" id="schedule-panel" role="tabpanel"><div class="panel-header"><h4 class="m-0">جدول مواعيد الكورسات</h4><button id="addScheduleBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة موعد</button></div><div id="schedule-results" class="mt-4"></div></div>
+                <div class="tab-pane fade p-3" id="trainees-panel" role="tabpanel"><div class="d-flex justify-content-between align-items-center mb-4"><h4 class="m-0">قاعدة بيانات المتدربين</h4><button id="addTraineeBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة متدرب</button></div><div class="input-group mb-4"><input type="text" class="form-control" id="trainee-search-input" placeholder="أدخل اسم المتدرب للبحث..."><button class="btn btn-outline-primary" type="button" id="trainee-search-btn"><i class="fas fa-search"></i></button></div><div id="trainee-results" class="mt-4"></div></div>
+                <div class="tab-pane fade p-3" id="trainers-panel" role="tabpanel"><div class="d-flex justify-content-between align-items-center mb-4"><h4 class="m-0">قاعدة بيانات المدربين</h4><button id="addTrainerBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة مدرب</button></div><div class="input-group mb-4"><input type="text" class="form-control" id="trainer-search-input" placeholder="أدخل اسم المدرب للبحث..."><button class="btn btn-outline-primary" type="button" id="trainer-search-btn"><i class="fas fa-search"></i></button></div><div id="trainer-results" class="mt-4"></div></div>
+                <div class="tab-pane fade p-3" id="schedule-panel" role="tabpanel"><div class="d-flex justify-content-between align-items-center mb-4"><h4 class="m-0">جدول مواعيد الكورسات</h4><button id="addScheduleBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة موعد</button></div><div id="schedule-results" class="mt-4"></div></div>
             </div>
         </main>
     </div>
@@ -136,7 +139,20 @@
     <!-- All Modals -->
     <div class="modal fade" id="traineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="traineeForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="traineeModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">البيانات الشخصية</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div></div><h6 class="form-section-title">تسجيل الكورسات</h6><div class="position-relative"><label class="form-label">ابحث عن كورس لإضافته</label><input type="text" id="course-search-input" class="form-control" placeholder="...ابدأ بكتابة اسم الكورس"><div id="course-search-results-dropdown" class="search-results-dropdown d-none"></div></div><div id="selected-courses-list" class="mt-2"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
     <div class="modal fade" id="trainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="trainerForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="trainerModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">البيانات الشخصية</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" name="specialty" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" name="cv_file" class="form-control" accept=".pdf"><small id="currentCv" class="form-text text-primary"></small></div></div><h6 class="form-section-title">بيانات التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" name="contract_start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" name="contract_end_date" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
-    <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات الكورس</h6><div class="row g-3"><div class="col-12"><label class="form-label">اختر الكورس</label><select name="course_id" id="course-select-in-modal" class="form-select" required></select></div><div class="col-12"><label class="form-label">اختر المدرب</label><select name="trainer_id" id="trainer-select-in-modal" class="form-select" required></select></div><div class="col-md-6"><label class="form-label">اسم القاعة</label><input type="text" name="hall_name" class="form-control"></div><div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control"></div></div><h6 class="form-section-title">التوقيت</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ البدء</label><input type="date" name="start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ الانتهاء</label><input type="date" name="end_date" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت البدء</label><input type="time" name="start_time" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت الانتهاء</label><input type="time" name="end_time" class="form-control"></div><div class="col-12"><label class="form-label">أيام الكورس</label><input type="text" name="course_days" class="form-control" placeholder="الأحد - الثلاثاء - الخميس"></div></div><h6 class="form-section-title">الطلاب المسجلون</h6><div id="enrolled-trainees-display" class="p-2 bg-light rounded"></div><h6 class="form-section-title">تفاصيل إضافية</h6><div class="row g-3"><div class="col-12"><label class="form-label">متقدمون للبورد الألماني (افصل بفاصلة)</label><input type="text" name="german_board_applicants" class="form-control"></div><div class="col-12"><label class="form-label">خطة المسار</label><textarea name="course_plan" class="form-control" rows="3"></textarea></div><div class="col-12"><label class="form-label">المواد المطلوبة</label><textarea name="required_materials" class="form-control" rows="2"></textarea></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
+    <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">بيانات الكورس</h6><div class="row g-3"><div class="col-12"><label class="form-label">اختر الكورس</label><select name="course_id" id="course-select-in-modal" class="form-select" required></select></div><div class="col-12"><label class="form-label">اختر المدرب</label><select name="trainer_id" id="trainer-select-in-modal" class="form-select" required></select></div><div class="col-md-6"><label class="form-label">اسم القاعة</label><input type="text" name="hall_name" class="form-control"></div><div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control"></div></div><h6 class="form-section-title">التوقيت</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ البدء</label><input type="date" name="start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ الانتهاء</label><input type="date" name="end_date" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت البدء</label><input type="time" name="start_time" class="form-control"></div><div class="col-md-6"><label class="form-label">وقت الانتهاء</label><input type="time" name="end_time" class="form-control"></div><div class="col-12"><label class="form-label">أيام الكورس</label><input type="text" name="course_days" class="form-control" placeholder="الأحد - الثلاثاء - الخميس"></div></div>
+    
+    <!-- MODIFIED: Section for enrolling trainees -->
+    <h6 class="form-section-title">الطلاب المسجلون في الكورس</h6>
+    <div class="position-relative mb-2">
+        <label for="schedule-trainee-search-input" class="form-label visually-hidden">ابحث عن متدرب لإضافته</label>
+        <input type="text" id="schedule-trainee-search-input" class="form-control" placeholder="... ابدأ بكتابة اسم متدرب لإضافته للقائمة">
+        <div id="schedule-trainee-search-results" class="search-results-dropdown d-none"></div>
+    </div>
+    <div id="schedule-selected-trainees-list" class="mt-2 p-2 bg-light rounded" style="min-height: 50px;">
+        <!-- Selected trainees will be rendered here -->
+    </div>
+    
+    <h6 class="form-section-title">تفاصيل إضافية</h6><div class="row g-3"><div class="col-12"><label class="form-label">متقدمون للبورد الألماني (افصل بفاصلة)</label><input type="text" name="german_board_applicants" class="form-control"></div><div class="col-12"><label class="form-label">خطة المسار</label><textarea name="course_plan" class="form-control" rows="3"></textarea></div><div class="col-12"><label class="form-label">المواد المطلوبة</label><textarea name="required_materials" class="form-control" rows="2"></textarea></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
     <div class="modal fade" id="attendanceModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="attendanceForm"><input type="hidden" name="schedule_id"><div class="modal-header"><h5 class="modal-title" id="attendanceModalTitle">أخذ التفقد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label for="attendance_date" class="form-label">تاريخ المحاضرة</label><input type="date" name="attendance_date" id="attendance_date" class="form-control" required></div><hr><div id="attendance-student-list"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ التفقد</button></div></form></div></div></div>
     <div class="modal fade" id="confirmModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-white"><h5 class="modal-title">تأكيد الحذف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p id="confirmModalText"></p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button><button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button></div></div></div></div>
 
@@ -221,6 +237,12 @@
         };
 
         // --- CORE APP LOGIC ---
+        // Global Caches & State
+        let allCoursesCache = [];
+        let allTraineesCache = [];
+        let selectedCourses = new Map();
+        let scheduleSelectedTrainees = new Map();
+
         async function fetchTrainers(searchTerm = '') {
             showLoader('trainer-results');
             let query = supabaseClient.from('trainers').select('*').order('full_name');
@@ -238,8 +260,8 @@
             container.innerHTML = trainers.map(trainer => `
                 <div class="result-card mb-3">
                     <div class="card-actions">
-                        <button class="btn btn-sm btn-outline-primary" onclick="openTrainerModal(true, '${trainer.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteTrainer('${trainer.id}', '${trainer.full_name}')"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="openTrainerModal(true, '${trainer.id}')" title="تعديل"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteTrainer('${trainer.id}', '${trainer.full_name}')" title="حذف"><i class="fas fa-trash"></i></button>
                     </div>
                     <h5><i class="fas fa-user-tie me-2"></i>${trainer.full_name}</h5>
                     <p class="mb-1"><i class="fas fa-phone-alt me-2 text-muted"></i>${trainer.phone || 'N/A'}</p>
@@ -336,19 +358,13 @@
         }
         
         const traineeModal = new bootstrap.Modal(document.getElementById('traineeModal'));
-        let allCoursesCache = [];
-        let selectedCourses = new Map();
-
+        
         async function openTraineeModal(isEdit = false, id = null) {
             const form = document.getElementById('traineeForm');
             form.reset();
             form.querySelector('[name="id"]').value = id || '';
             selectedCourses.clear();
             
-            const { data, error } = await supabaseClient.from('courses').select('id, name');
-            if(error) { console.error("Could not fetch courses"); return; }
-            allCoursesCache = data;
-
             if (isEdit) {
                 document.getElementById('traineeModalTitle').textContent = 'تعديل بيانات المتدرب';
                 const { data: traineeData } = await supabaseClient.from('trainees').select('*, trainee_enrollments(course_id, courses(name))').eq('id', id).single();
@@ -400,8 +416,10 @@
         function renderSelectedCourses() {
             const listContainer = document.getElementById('selected-courses-list');
             listContainer.innerHTML = '';
-            for (const [id, name] of selectedCourses.entries()) {
-                listContainer.innerHTML += `<div class="selected-tag" data-id="${id}">${name}<button type="button" onclick="removeCourse('${id}')">&times;</button></div>`;
+            if (selectedCourses.size > 0) {
+                for (const [id, name] of selectedCourses.entries()) {
+                    listContainer.innerHTML += `<div class="selected-tag" data-id="${id}">${name}<button type="button" onclick="removeCourse('${id}')">&times;</button></div>`;
+                }
             }
         }
 
@@ -470,41 +488,45 @@
         }
         
         const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+        
         async function openScheduleModal(isEdit = false, id = null) {
             const form = document.getElementById('scheduleForm');
             form.reset();
             form.querySelector('[name="id"]').value = '';
-            document.getElementById('enrolled-trainees-display').innerHTML = '';
+            
+            scheduleSelectedTrainees.clear();
+            document.getElementById('schedule-trainee-search-input').value = '';
+
             await populateScheduleModalSelects();
 
             if (isEdit) {
                 document.getElementById('scheduleModalTitle').textContent = 'تعديل الموعد';
-                const { data } = await supabaseClient.from('schedules').select('*').eq('id', id).single();
-                if (!data) return;
-                Object.keys(data).forEach(key => {
+                const { data: scheduleData, error: scheduleError } = await supabaseClient.from('schedules').select('*').eq('id', id).single();
+                if (scheduleError || !scheduleData) { console.error("Error fetching schedule for edit", scheduleError); return; }
+                
+                Object.keys(scheduleData).forEach(key => {
                     const input = form.querySelector(`[name="${key}"]`);
                     if (input) {
-                        if(key === 'german_board_applicants' && Array.isArray(data[key])) input.value = data[key].join(', ');
-                        else input.value = data[key];
+                        if(key === 'german_board_applicants' && Array.isArray(scheduleData[key])) input.value = scheduleData[key].join(', ');
+                        else input.value = scheduleData[key];
                     }
                 });
-                displayEnrolledTrainees(data.course_id);
+
+                if (scheduleData.course_id) {
+                    const { data: enrollments, error: enrollError } = await supabaseClient.from('trainee_enrollments').select('trainees(id, full_name)').eq('course_id', scheduleData.course_id);
+                    if (enrollError) console.error("Error fetching enrollments", enrollError);
+                    else if (enrollments) {
+                        enrollments.forEach(e => {
+                            if(e.trainees) scheduleSelectedTrainees.set(e.trainees.id, e.trainees.full_name);
+                        });
+                    }
+                }
             } else {
                 document.getElementById('scheduleModalTitle').textContent = 'إضافة موعد جديد';
             }
+            
+            renderScheduleSelectedTrainees();
             scheduleModal.show();
-        }
-
-        async function displayEnrolledTrainees(courseId) {
-            const container = document.getElementById('enrolled-trainees-display');
-            if(!courseId) { container.innerHTML = '<p class="text-muted">اختر كورساً لعرض الطلاب المسجلين.</p>'; return; }
-            container.innerHTML = '<div class="spinner-border spinner-border-sm"></div>';
-            const { data, error } = await supabaseClient.from('trainee_enrollments').select('trainees(full_name)').eq('course_id', courseId);
-            if(error || !data || data.length === 0) {
-                container.innerHTML = '<p class="text-muted">لا يوجد طلاب مسجلون في هذا الكورس بعد.</p>';
-            } else {
-                container.innerHTML = data.map(e => `<span class="badge bg-info me-1">${e.trainees.full_name}</span>`).join('');
-            }
         }
 
         async function handleScheduleFormSubmit(event) {
@@ -519,10 +541,39 @@
             else scheduleData.german_board_applicants = [];
 
             const sanitizedData = sanitizeData(scheduleData);
-            let response = id ? await supabaseClient.from('schedules').update(sanitizedData).eq('id', id) : await supabaseClient.from('schedules').insert([sanitizedData]);
             
-            if (response.error) { console.error(response.error); alert('خطأ في حفظ الموعد.'); } 
-            else { alert('تم الحفظ بنجاح!'); scheduleModal.hide(); fetchSchedules(); }
+            const { data: savedSchedule, error: scheduleError } = id 
+                ? await supabaseClient.from('schedules').update(sanitizedData).eq('id', id).select().single()
+                : await supabaseClient.from('schedules').insert([sanitizedData]).select().single();
+            
+            if (scheduleError) { console.error(scheduleError); alert('خطأ في حفظ الموعد.'); return; }
+
+            const courseId = savedSchedule.course_id;
+            if (!courseId) {
+                alert('تم حفظ الموعد، ولكن لم يتم تحديد كورس لتحديث قائمة الطلاب.');
+                scheduleModal.hide(); fetchSchedules(); return;
+            }
+
+            const { data: currentEnrollmentsData } = await supabaseClient.from('trainee_enrollments').select('trainee_id').eq('course_id', courseId);
+            const currentTraineeIds = new Set(currentEnrollmentsData.map(e => e.trainee_id));
+            const newTraineeIds = new Set(scheduleSelectedTrainees.keys());
+
+            const traineesToAdd = [...newTraineeIds].filter(tid => !currentTraineeIds.has(tid));
+            const traineesToRemove = [...currentTraineeIds].filter(tid => !newTraineeIds.has(tid));
+
+            if (traineesToRemove.length > 0) {
+                await supabaseClient.from('trainee_enrollments').delete().eq('course_id', courseId).in('trainee_id', traineesToRemove);
+            }
+            
+            if (traineesToAdd.length > 0) {
+                const enrollmentsToInsert = traineesToAdd.map(traineeId => ({ course_id: courseId, trainee_id: traineeId }));
+                await supabaseClient.from('trainee_enrollments').insert(enrollmentsToInsert);
+            }
+
+            alert('تم الحفظ بنجاح!');
+            scheduleModal.hide();
+            fetchSchedules();
+            fetchTrainees();
         }
         
         function handleDeleteSchedule(id, name) {
@@ -536,8 +587,8 @@
         async function populateScheduleModalSelects() {
             const { data: courses } = await supabaseClient.from('courses').select('id, name');
             const { data: trainers } = await supabaseClient.from('trainers').select('id, full_name');
-            if (courses) document.getElementById('course-select-in-modal').innerHTML = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            if (trainers) document.getElementById('trainer-select-in-modal').innerHTML = trainers.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
+            if (courses) document.getElementById('course-select-in-modal').innerHTML = `<option value="">-- اختر كورساً --</option>` + courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            if (trainers) document.getElementById('trainer-select-in-modal').innerHTML = `<option value="">-- اختر مدرباً --</option>` + trainers.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
         }
         
         const attendanceModal = new bootstrap.Modal(document.getElementById('attendanceModal'));
@@ -622,6 +673,8 @@
             const { count } = await supabaseClient.from('trainees').select('*', { count: 'exact', head: true });
             const { data: courses } = await supabaseClient.from('courses').select('*').order('name');
             
+            allCoursesCache = courses || [];
+
             document.getElementById('summary-content').innerHTML = `
                 <div class="col-lg-5 mb-4">
                     <div class="card text-center h-100 shadow-sm"><div class="card-body p-4 d-flex flex-column justify-content-center">
@@ -661,12 +714,61 @@
             }, `هل أنت متأكد من حذف كورس "${name}"؟`);
         }
 
+        // --- NEW Functions for Schedule Trainee Management ---
+        async function cacheAllTrainees() {
+            const { data, error } = await supabaseClient.from('trainees').select('id, full_name');
+            if (error) console.error("Could not cache trainees", error);
+            else allTraineesCache = data || [];
+        }
+
+        function renderScheduleTraineeSearchResults(searchTerm = '') {
+            const resultsContainer = document.getElementById('schedule-trainee-search-results');
+            if(!searchTerm) {
+                resultsContainer.classList.add('d-none');
+                return;
+            }
+            const availableTrainees = allTraineesCache.filter(trainee => !scheduleSelectedTrainees.has(trainee.id));
+            const filtered = availableTrainees.filter(t => t.full_name.toLowerCase().includes(searchTerm.toLowerCase()));
+            
+            if(filtered.length > 0) {
+                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(t => `<li class="list-group-item" onclick="selectTraineeForSchedule('${t.id}', '${t.full_name}')">${t.full_name}</li>`).join('')}</ul>`;
+                resultsContainer.classList.remove('d-none');
+            } else {
+                resultsContainer.classList.add('d-none');
+            }
+        }
+
+        function selectTraineeForSchedule(id, name) {
+            scheduleSelectedTrainees.set(id, name);
+            document.getElementById('schedule-trainee-search-input').value = '';
+            document.getElementById('schedule-trainee-search-results').classList.add('d-none');
+            renderScheduleSelectedTrainees();
+        }
+
+        function removeTraineeFromSchedule(id) {
+            scheduleSelectedTrainees.delete(id);
+            renderScheduleSelectedTrainees();
+        }
+
+        function renderScheduleSelectedTrainees() {
+            const listContainer = document.getElementById('schedule-selected-trainees-list');
+            if (scheduleSelectedTrainees.size === 0) {
+                 listContainer.innerHTML = '<p class="text-muted small m-0">لم يتم اختيار طلاب بعد. استخدم البحث أعلاه للإضافة.</p>';
+                 return;
+            }
+            listContainer.innerHTML = '';
+            for (const [id, name] of scheduleSelectedTrainees.entries()) {
+                listContainer.innerHTML += `<div class="selected-tag" data-id="${id}">${name}<button type="button" onclick="removeTraineeFromSchedule('${id}')">&times;</button></div>`;
+            }
+        }
+
         // --- APP INITIALIZATION ---
         function initializeApp() {
             fetchSummaryData();
             fetchTrainees();
             fetchTrainers();
             fetchSchedules();
+            cacheAllTrainees();
 
             document.getElementById('trainee-search-btn').addEventListener('click', () => fetchTrainees(document.getElementById('trainee-search-input').value));
             document.getElementById('trainer-search-btn').addEventListener('click', () => fetchTrainers(document.getElementById('trainer-search-input').value));
@@ -681,7 +783,22 @@
             document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceFormSubmit);
             
             document.getElementById('course-search-input').addEventListener('keyup', (e) => renderCourseSearchResults(e.target.value));
-            document.getElementById('course-select-in-modal').addEventListener('change', (e) => displayEnrolledTrainees(e.target.value));
+            document.getElementById('schedule-trainee-search-input').addEventListener('keyup', (e) => renderScheduleTraineeSearchResults(e.target.value));
+            
+            document.getElementById('course-select-in-modal').addEventListener('change', async (e) => {
+                const courseId = e.target.value;
+                scheduleSelectedTrainees.clear(); 
+                if (courseId) {
+                    const { data: enrollments, error } = await supabaseClient.from('trainee_enrollments').select('trainees(id, full_name)').eq('course_id', courseId);
+                    if (error) console.error("Error fetching enrollments for selected course", error);
+                    else if (enrollments) {
+                        enrollments.forEach(e => {
+                            if (e.trainees) scheduleSelectedTrainees.set(e.trainees.id, e.trainees.full_name);
+                        });
+                    }
+                }
+                renderScheduleSelectedTrainees();
+            });
         }
 
         document.addEventListener('DOMContentLoaded', checkUser);
