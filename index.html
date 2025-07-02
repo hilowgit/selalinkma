@@ -198,7 +198,8 @@
             padding: 1rem 0.75rem;
         }
         .inventory-table thead th {
-            border-bottom-width: 2px;
+            background-color: var(--light-primary);
+            color: var(--heading-color);
             border-color: var(--border-color);
             font-weight: 600;
         }
@@ -215,7 +216,7 @@
             transition: background-color 0.15s ease-in-out;
         }
         .inventory-table tbody tr:hover {
-            background-color: var(--light-primary);
+            background-color: #f8f9fa;
         }
         .inventory-table .actions-cell .btn {
             border-radius: 50%;
@@ -224,8 +225,11 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid var(--border-color);
-            background-color: #fff;
+            border: none;
+            background-color: transparent;
+        }
+        .inventory-table .actions-cell .btn:hover {
+            background-color: var(--border-color);
         }
         .balance-ok { color: var(--success-color); }
         .balance-low { color: var(--warning-color); }
@@ -1483,7 +1487,7 @@
             }
 
             container.innerHTML = `
-                <table class="table table-hover align-middle inventory-table">
+                <table class="table table-bordered table-hover align-middle inventory-table">
                     <thead class="table-light">
                         <tr>
                             <th>الصنف</th>
@@ -1651,7 +1655,7 @@
             }
 
             body.innerHTML = `
-                <table class="table table-striped table-hover align-middle">
+                <table class="table table-bordered table-hover align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>التاريخ</th>
