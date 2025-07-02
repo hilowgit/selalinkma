@@ -194,9 +194,16 @@
             vertical-align: middle;
             text-align: center;
         }
-        .inventory-table .item-name {
+        .inventory-table .item-name-cell {
             text-align: right;
             font-weight: bold;
+        }
+        .inventory-table .actions-cell {
+            text-align: left;
+            width: 150px;
+        }
+        .d-none {
+            display: none !important;
         }
     </style>
 </head>
@@ -1247,21 +1254,72 @@
                             <th>إجمالي الداخل</th>
                             <th>إجمالي الخارج</th>
                             <th>الرصيد الحالي</th>
+                            <th class="actions-cell">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${inventoryData.map(item => `
-                            <tr>
-                                <td class="item-name">${item.name}</td>
+                            <tr id="item-row-${item.id}">
+                                <td class="item-name-cell">
+                                    <span id="item-name-${item.id}">${item.name}</span>
+                                    <input type="text" class="form-control d-none" id="item-input-${item.id}" value="${item.name}">
+                                </td>
                                 <td>${item.totalIn}</td>
                                 <td>${item.totalOut}</td>
                                 <td><strong>${item.balance}</strong></td>
+                                <td class="actions-cell">
+                                    <div id="actions-view-${item.id}">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="toggleItemEditMode('${item.id}', true)"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteInventoryItem('${item.id}', '${item.name}')"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                    <div id="actions-edit-${item.id}" class="d-none">
+                                        <button class="btn btn-sm btn-success" onclick="handleUpdateInventoryItem('${item.id}')"><i class="fas fa-check"></i></button>
+                                        <button class="btn btn-sm btn-secondary" onclick="toggleItemEditMode('${item.id}', false)"><i class="fas fa-times"></i></button>
+                                    </div>
+                                </td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>`;
         }
         
+        function toggleItemEditMode(itemId, isEditing) {
+            document.getElementById(`item-name-${itemId}`).classList.toggle('d-none', isEditing);
+            document.getElementById(`item-input-${itemId}`).classList.toggle('d-none', !isEditing);
+            document.getElementById(`actions-view-${itemId}`).classList.toggle('d-none', isEditing);
+            document.getElementById(`actions-edit-${itemId}`).classList.toggle('d-none', !isEditing);
+            if (isEditing) {
+                document.getElementById(`item-input-${itemId}`).focus();
+            }
+        }
+
+        async function handleUpdateInventoryItem(itemId) {
+            const newName = document.getElementById(`item-input-${itemId}`).value.trim();
+            if (!newName) {
+                alert('اسم الصنف لا يمكن أن يكون فارغاً.');
+                return;
+            }
+            const { error } = await supabaseClient.from('inventory_items').update({ name: newName }).eq('id', itemId);
+            if (error) {
+                console.error("Error updating item:", error);
+                alert('خطأ في تحديث الصنف.');
+            } else {
+                fetchInventoryData(); // Refresh the table
+            }
+        }
+
+        function handleDeleteInventoryItem(id, name) {
+            confirmDeletion(async () => {
+                const { error } = await supabaseClient.from('inventory_items').delete().eq('id', id);
+                if (error) {
+                    alert('خطأ في حذف الصنف.');
+                } else {
+                    alert('تم حذف الصنف وجميع حركاته بنجاح.');
+                    fetchInventoryData();
+                }
+            }, `هل أنت متأكد من حذف صنف "${name}"؟ سيتم حذف جميع الحركات المرتبطة به أيضاً.`);
+        }
+
         async function openInventoryItemModal() {
             const { value: itemName } = await Swal.fire({
                 title: 'إضافة صنف جديد',
