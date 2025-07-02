@@ -186,6 +186,15 @@
         .event-dot.course { background-color: var(--primary-color); }
         .event-dot.appointment { background-color: var(--appointment-color); }
 
+        /* --- Inventory Styles --- */
+        .inventory-table th, .inventory-table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .inventory-table .item-name {
+            text-align: right;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -222,6 +231,7 @@
                 <li class="nav-item" role="presentation"><button class="nav-link" id="trainers-tab" data-bs-toggle="tab" data-bs-target="#trainers-panel" type="button"><i class="fas fa-chalkboard-teacher me-2"></i>المدربين</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-panel" type="button"><i class="fas fa-calendar-alt me-2"></i>الجدولة</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar-panel" type="button"><i class="fas fa-calendar-week me-2"></i>التقويم</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory-panel" type="button"><i class="fas fa-boxes-stacked me-2"></i>الجرد</button></li>
             </ul>
 
             <!-- Tab Content -->
@@ -249,6 +259,20 @@
                         </div>
                         <div id="calendar-grid"></div>
                     </div>
+                </div>
+                <div class="tab-pane fade p-3" id="inventory-panel" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="m-0">إدارة الجرد والمخزون</h4>
+                        <div>
+                            <button id="addInventoryTransactionBtn" class="btn btn-success me-2"><i class="fas fa-exchange-alt me-2"></i>إضافة حركة</button>
+                            <button id="addInventoryItemBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة صنف</button>
+                        </div>
+                    </div>
+                    <div class="input-group mb-4">
+                        <input type="text" class="form-control" id="inventory-search-input" placeholder="أدخل اسم الصنف للبحث...">
+                        <button class="btn btn-outline-primary" type="button" id="inventory-search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div id="inventory-results" class="mt-4 table-responsive"></div>
                 </div>
             </div>
         </main>
@@ -302,6 +326,7 @@
         <div class="mb-3"><label class="form-label">تاريخ الموعد</label><input type="date" name="appointment_date" class="form-control" required></div>
         <div class="mb-3"><label class="form-label">الوصف (اختياري)</label><textarea name="description" class="form-control" rows="3"></textarea></div>
     </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الموعد</button></div></form></div></div></div>
+    <div class="modal fade" id="inventoryTransactionModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="inventoryTransactionForm"><div class="modal-header"><h5 class="modal-title">إضافة حركة مخزون</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">الصنف</label><select name="item_id" class="form-select" required></select></div><div class="mb-3"><label class="form-label">نوع الحركة</label><select name="transaction_type" class="form-select" required><option value="in">داخل (شراء)</option><option value="out">خارج (صرف)</option></select></div><div class="mb-3"><label class="form-label">الكمية</label><input type="number" name="quantity" class="form-control" required min="1"></div><div class="mb-3"><label class="form-label">التاريخ</label><input type="date" name="transaction_date" class="form-control" required></div><div class="mb-3"><label class="form-label">البيان (اختياري)</label><input type="text" name="description" class="form-control"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الحركة</button></div></form></div></div></div>
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -311,7 +336,7 @@
     <script>
         // =================================================================================
         // !! تم وضع بيانات الاتصال الخاصة بك هنا !!
-        // !! تذكر: أضف جدول 'appointments' إلى قاعدة بياناتك.
+        // !! تذكر: أضف جدول 'appointments' و 'inventory_items' و 'inventory_transactions'
         // =================================================================================
         const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0';
@@ -388,6 +413,7 @@
         // Global Caches & State
         let allCoursesCache = [];
         let allTraineesCache = [];
+        let allInventoryItemsCache = [];
         let selectedCourses = new Map();
         let scheduleSelectedTrainees = new Map();
         let calendarDate = new Date();
@@ -1167,29 +1193,169 @@
             }
         }
 
+        // --- INVENTORY LOGIC ---
+        const inventoryTransactionModal = new bootstrap.Modal(document.getElementById('inventoryTransactionModal'));
+
+        async function fetchInventoryData(searchTerm = '') {
+            showLoader('inventory-results');
+            
+            let itemsQuery = supabaseClient.from('inventory_items').select('id, name');
+            if(searchTerm) {
+                itemsQuery = itemsQuery.ilike('name', `%${searchTerm}%`);
+            }
+            const { data: items, error: itemsError } = await itemsQuery;
+
+            if (itemsError) {
+                console.error("Error fetching inventory items", itemsError);
+                return;
+            }
+
+            const { data: transactions, error: transError } = await supabaseClient.from('inventory_transactions').select('*');
+            if (transError) {
+                 console.error("Error fetching inventory transactions", transError);
+                 return;
+            }
+
+            const inventoryData = items.map(item => {
+                const itemTransactions = transactions.filter(t => t.item_id === item.id);
+                const totalIn = itemTransactions.filter(t => t.transaction_type === 'in').reduce((sum, t) => sum + t.quantity, 0);
+                const totalOut = itemTransactions.filter(t => t.transaction_type === 'out').reduce((sum, t) => sum + t.quantity, 0);
+                const balance = totalIn - totalOut;
+                return { ...item, totalIn, totalOut, balance };
+            });
+
+            displayInventory(inventoryData);
+        }
+
+        function displayInventory(inventoryData) {
+            const container = document.getElementById('inventory-results');
+            if (inventoryData.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">لا توجد أصناف في المخزون. أضف صنفاً جديداً للبدء.</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="table table-bordered table-hover inventory-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>الصنف</th>
+                            <th>إجمالي الداخل</th>
+                            <th>إجمالي الخارج</th>
+                            <th>الرصيد الحالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${inventoryData.map(item => `
+                            <tr>
+                                <td class="item-name">${item.name}</td>
+                                <td>${item.totalIn}</td>
+                                <td>${item.totalOut}</td>
+                                <td><strong>${item.balance}</strong></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
+        }
+        
+        async function openInventoryItemModal() {
+            const { value: itemName } = await Swal.fire({
+                title: 'إضافة صنف جديد',
+                input: 'text',
+                inputLabel: 'اسم الصنف',
+                inputPlaceholder: 'أدخل اسم الصنف هنا...',
+                showCancelButton: true,
+                confirmButtonText: 'إضافة',
+                cancelButtonText: 'إلغاء',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'يجب إدخال اسم الصنف!'
+                    }
+                }
+            });
+
+            if (itemName) {
+                const { error } = await supabaseClient.from('inventory_items').insert([{ name: itemName }]);
+                if (error) {
+                    console.error("Error adding inventory item:", error);
+                    Swal.fire('خطأ!', 'حدث خطأ أثناء إضافة الصنف. قد يكون الاسم مكرراً.', 'error');
+                } else {
+                    Swal.fire('تم!', 'تمت إضافة الصنف بنجاح.', 'success');
+                    await cacheInventoryItems();
+                    fetchInventoryData();
+                }
+            }
+        }
+        
+        async function cacheInventoryItems() {
+            const { data, error } = await supabaseClient.from('inventory_items').select('id, name').order('name');
+            if (error) console.error("Error caching inventory items", error);
+            else allInventoryItemsCache = data || [];
+        }
+
+        async function openTransactionModal() {
+            const form = document.getElementById('inventoryTransactionForm');
+            form.reset();
+            form.querySelector('[name="transaction_date"]').value = getTodayDateString();
+            
+            const itemSelect = form.querySelector('[name="item_id"]');
+            if (allInventoryItemsCache.length === 0) {
+                await cacheInventoryItems();
+            }
+            
+            itemSelect.innerHTML = allInventoryItemsCache.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
+
+            inventoryTransactionModal.show();
+        }
+
+        async function handleInventoryTransactionSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const transactionData = Object.fromEntries(formData.entries());
+            
+            const { error } = await supabaseClient.from('inventory_transactions').insert([transactionData]);
+
+            if (error) {
+                console.error("Error saving transaction:", error);
+                alert('خطأ في حفظ الحركة.');
+            } else {
+                alert('تم حفظ الحركة بنجاح.');
+                inventoryTransactionModal.hide();
+                fetchInventoryData();
+            }
+        }
+
 
         // --- APP INITIALIZATION ---
         function initializeApp() {
+            // Fetch initial data
             fetchSummaryData();
             fetchTrainees();
             fetchTrainers();
             fetchSchedules();
             cacheAllTrainees();
             renderCalendar();
+            fetchInventoryData();
+            cacheInventoryItems();
 
+            // Setup event listeners
             document.getElementById('trainee-search-btn').addEventListener('click', () => fetchTrainees(document.getElementById('trainee-search-input').value));
             document.getElementById('trainer-search-btn').addEventListener('click', () => fetchTrainers(document.getElementById('trainer-search-input').value));
             document.getElementById('schedule-search-btn').addEventListener('click', () => fetchSchedules(document.getElementById('schedule-search-input').value));
+            document.getElementById('inventory-search-btn').addEventListener('click', () => fetchInventoryData(document.getElementById('inventory-search-input').value));
             
             document.getElementById('addTrainerBtn').addEventListener('click', () => openTrainerModal());
             document.getElementById('addTraineeBtn').addEventListener('click', () => openTraineeModal());
             document.getElementById('addScheduleBtn').addEventListener('click', () => openScheduleModal());
+            document.getElementById('addInventoryItemBtn').addEventListener('click', openInventoryItemModal);
+            document.getElementById('addInventoryTransactionBtn').addEventListener('click', openTransactionModal);
 
             document.getElementById('traineeForm').addEventListener('submit', handleTraineeFormSubmit);
             document.getElementById('trainerForm').addEventListener('submit', handleTrainerFormSubmit);
             document.getElementById('scheduleForm').addEventListener('submit', handleScheduleFormSubmit);
             document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceFormSubmit);
             document.getElementById('appointmentForm').addEventListener('submit', handleAppointmentFormSubmit);
+            document.getElementById('inventoryTransactionForm').addEventListener('submit', handleInventoryTransactionSubmit);
             
             document.getElementById('course-search-input').addEventListener('keyup', (e) => renderCourseSearchResults(e.target.value));
             document.getElementById('schedule-trainee-search-input').addEventListener('keyup', (e) => renderScheduleTraineeSearchResults(e.target.value));
