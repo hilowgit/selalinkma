@@ -1465,10 +1465,10 @@
             const id = transactionData.id;
 
             const dataToSubmit = { ...transactionData };
-            if (id) {
+            if (!id) {
                 delete dataToSubmit.id;
             }
-
+            
             const { error } = id
                 ? await supabaseClient.from('inventory_transactions').update(dataToSubmit).eq('id', id)
                 : await supabaseClient.from('inventory_transactions').insert([dataToSubmit]);
