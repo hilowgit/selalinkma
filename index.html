@@ -297,8 +297,20 @@
     <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
     <h6 class="form-section-title">بيانات الكورس</h6>
     <div class="row g-3">
-        <div class="col-12"><label class="form-label">اختر الكورس</label><select name="course_id" id="course-select-in-modal" class="form-select" required></select></div>
-        <div class="col-12"><label class="form-label">اختر المدرب</label><select name="trainer_id" id="trainer-select-in-modal" class="form-select" required></select></div>
+        <div class="col-12 position-relative">
+            <label class="form-label">اختر الكورس</label>
+            <input type="text" id="schedule-course-search-input" class="form-control" placeholder="ابحث عن كورس..." autocomplete="off">
+            <div id="schedule-course-search-results" class="search-results-dropdown d-none"></div>
+            <div id="selected-schedule-course-display" class="mt-2"></div>
+            <input type="hidden" name="course_id" required>
+        </div>
+        <div class="col-12 position-relative">
+            <label class="form-label">اختر المدرب</label>
+            <input type="text" id="schedule-trainer-search-input" class="form-control" placeholder="ابحث عن مدرب..." autocomplete="off">
+            <div id="schedule-trainer-search-results" class="search-results-dropdown d-none"></div>
+            <div id="selected-schedule-trainer-display" class="mt-2"></div>
+            <input type="hidden" name="trainer_id" required>
+        </div>
         <div class="col-md-6"><label class="form-label">اسم القاعة</label><input type="text" name="hall_name" class="form-control"></div>
         <div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control"></div>
     </div>
@@ -439,6 +451,7 @@
         let allCoursesCache = [];
         let allTraineesCache = [];
         let allInventoryItemsCache = [];
+        let allTrainersCache = [];
         let selectedCourses = new Map();
         let scheduleSelectedTrainees = new Map();
         let calendarDate = new Date();
@@ -738,14 +751,18 @@
             form.reset();
             form.querySelector('[name="id"]').value = '';
             
+            // Clear search/select fields
+            document.getElementById('selected-schedule-course-display').innerHTML = '';
+            document.getElementById('selected-schedule-trainer-display').innerHTML = '';
+            document.getElementById('schedule-course-search-input').value = '';
+            document.getElementById('schedule-trainer-search-input').value = '';
+            
             scheduleSelectedTrainees.clear();
             document.getElementById('schedule-trainee-search-input').value = '';
 
-            await populateScheduleModalSelects();
-            
             if (isEdit) {
                 document.getElementById('scheduleModalTitle').textContent = 'تعديل الموعد';
-                const { data: scheduleData, error: scheduleError } = await supabaseClient.from('schedules').select('*').eq('id', id).single();
+                const { data: scheduleData, error: scheduleError } = await supabaseClient.from('schedules').select('*, courses(name), trainers(full_name)').eq('id', id).single();
                 if (scheduleError || !scheduleData) { console.error("Error fetching schedule for edit", scheduleError); return; }
                 
                 Object.keys(scheduleData).forEach(key => {
@@ -760,6 +777,14 @@
                         }
                     }
                 });
+
+                // Set selected course and trainer
+                if (scheduleData.courses) {
+                    selectCourseForSchedule(scheduleData.course_id, scheduleData.courses.name);
+                }
+                if (scheduleData.trainers) {
+                    selectTrainerForSchedule(scheduleData.trainer_id, scheduleData.trainers.full_name);
+                }
 
                 if (scheduleData.course_id) {
                     const { data: enrollments, error: enrollError } = await supabaseClient.from('trainee_enrollments').select('trainees(id, full_name)').eq('course_id', scheduleData.course_id);
@@ -788,6 +813,11 @@
             const id = scheduleData.id;
             delete scheduleData.id;
             
+            if (!scheduleData.course_id || !scheduleData.trainer_id) {
+                alert('الرجاء اختيار كورس ومدرب.');
+                return;
+            }
+
             scheduleData.status = form.querySelector('[name="status"]').checked ? 'completed' : 'active';
 
             if (scheduleData.german_board_applicants) scheduleData.german_board_applicants = scheduleData.german_board_applicants.split(',').map(s => s.trim());
@@ -838,13 +868,6 @@
                 if (error) alert('خطأ في الحذف.');
                 else { alert('تم الحذف.'); fetchSchedules(); }
             }, `هل أنت متأكد من حذف موعد "${name}"؟`);
-        }
-        
-        async function populateScheduleModalSelects() {
-            const { data: courses } = await supabaseClient.from('courses').select('id, name');
-            const { data: trainers } = await supabaseClient.from('trainers').select('id, full_name');
-            if (courses) document.getElementById('course-select-in-modal').innerHTML = `<option value="">-- اختر كورساً --</option>` + courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            if (trainers) document.getElementById('trainer-select-in-modal').innerHTML = `<option value="">-- اختر مدرباً --</option>` + trainers.map(t => `<option value="${t.id}">${t.full_name}</option>`).join('');
         }
         
         const attendanceModal = new bootstrap.Modal(document.getElementById('attendanceModal'));
@@ -1080,6 +1103,12 @@
             else allTraineesCache = data || [];
         }
 
+        async function cacheAllTrainers() {
+            const { data, error } = await supabaseClient.from('trainers').select('id, full_name');
+            if (error) console.error("Could not cache trainers", error);
+            else allTrainersCache = data || [];
+        }
+
         function renderScheduleTraineeSearchResults(searchTerm = '') {
             const resultsContainer = document.getElementById('schedule-trainee-search-results');
             if(!searchTerm) {
@@ -1119,6 +1148,70 @@
             for (const [id, name] of selectedCourses.entries()) {
                 listContainer.innerHTML += `<div class="selected-tag" data-id="${id}">${name}<button type="button" onclick="removeTraineeFromSchedule('${id}')">&times;</button></div>`;
             }
+        }
+        
+        function renderScheduleCourseSearchResults(searchTerm) {
+            const resultsContainer = document.getElementById('schedule-course-search-results');
+            if(!searchTerm) {
+                resultsContainer.classList.add('d-none');
+                return;
+            }
+            const filtered = allCoursesCache.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            
+            if(filtered.length > 0) {
+                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(item => `<li class="list-group-item" onclick="selectCourseForSchedule('${item.id}', '${item.name}')">${item.name}</li>`).join('')}</ul>`;
+                resultsContainer.classList.remove('d-none');
+            } else {
+                resultsContainer.classList.add('d-none');
+            }
+        }
+
+        function selectCourseForSchedule(id, name) {
+            document.querySelector('#scheduleForm [name="course_id"]').value = id;
+            document.getElementById('selected-schedule-course-display').innerHTML = `<span class="badge bg-primary">${name}</span>`;
+            document.getElementById('schedule-course-search-input').value = '';
+            document.getElementById('schedule-course-search-results').classList.add('d-none');
+            
+            // Auto-load enrolled trainees for the selected course
+            const courseId = id;
+            scheduleSelectedTrainees.clear(); 
+            if (courseId) {
+                supabaseClient.from('trainee_enrollments').select('trainees(id, full_name)').eq('course_id', courseId)
+                .then(({ data: enrollments, error }) => {
+                    if (error) console.error("Error fetching enrollments for selected course", error);
+                    else if (enrollments) {
+                        enrollments.forEach(e => {
+                            if (e.trainees) scheduleSelectedTrainees.set(e.trainees.id, e.trainees.full_name);
+                        });
+                    }
+                    renderScheduleSelectedTrainees();
+                });
+            } else {
+                renderScheduleSelectedTrainees();
+            }
+        }
+
+        function renderScheduleTrainerSearchResults(searchTerm) {
+            const resultsContainer = document.getElementById('schedule-trainer-search-results');
+            if(!searchTerm) {
+                resultsContainer.classList.add('d-none');
+                return;
+            }
+            const filtered = allTrainersCache.filter(item => item.full_name.toLowerCase().includes(searchTerm.toLowerCase()));
+            
+            if(filtered.length > 0) {
+                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(item => `<li class="list-group-item" onclick="selectTrainerForSchedule('${item.id}', '${item.full_name}')">${item.full_name}</li>`).join('')}</ul>`;
+                resultsContainer.classList.remove('d-none');
+            } else {
+                resultsContainer.classList.add('d-none');
+            }
+        }
+
+        function selectTrainerForSchedule(id, name) {
+            document.querySelector('#scheduleForm [name="trainer_id"]').value = id;
+            document.getElementById('selected-schedule-trainer-display').innerHTML = `<span class="badge bg-primary">${name}</span>`;
+            document.getElementById('schedule-trainer-search-input').value = '';
+            document.getElementById('schedule-trainer-search-results').classList.add('d-none');
         }
 
         // --- CALENDAR LOGIC ---
@@ -1486,8 +1579,7 @@
                     return;
                 }
                 form.querySelector('[name="id"]').value = data.id;
-                form.querySelector('[name="item_id"]').value = data.item_id;
-                document.getElementById('selected-inventory-item-display').innerHTML = `<span class="badge bg-primary">${data.inventory_items.name}</span>`;
+                selectInventoryItem(data.item_id, data.inventory_items.name);
                 form.querySelector('[name="transaction_type"]').value = data.transaction_type;
                 form.querySelector('[name="quantity"]').value = data.quantity;
                 form.querySelector('[name="transaction_date"]').value = data.transaction_date;
@@ -1639,6 +1731,7 @@
             fetchTrainers();
             fetchSchedules();
             cacheAllTrainees();
+            cacheAllTrainers();
             renderCalendar();
             fetchInventoryData();
             cacheInventoryItems();
@@ -1665,6 +1758,8 @@
             document.getElementById('course-search-input').addEventListener('keyup', (e) => renderCourseSearchResults(e.target.value));
             document.getElementById('schedule-trainee-search-input').addEventListener('keyup', (e) => renderScheduleTraineeSearchResults(e.target.value));
             document.getElementById('inventory-item-search-input').addEventListener('keyup', (e) => renderInventoryItemSearchResults(e.target.value));
+            document.getElementById('schedule-course-search-input').addEventListener('keyup', (e) => renderScheduleCourseSearchResults(e.target.value));
+            document.getElementById('schedule-trainer-search-input').addEventListener('keyup', (e) => renderScheduleTrainerSearchResults(e.target.value));
             
             document.getElementById('courseStatus').addEventListener('change', function() {
                 toggleScheduleFormLock(this.checked);
@@ -1677,21 +1772,6 @@
             document.getElementById('next-month-btn').addEventListener('click', () => {
                 calendarDate.setMonth(calendarDate.getMonth() + 1);
                 renderCalendar();
-            });
-
-            document.getElementById('course-select-in-modal').addEventListener('change', async (e) => {
-                const courseId = e.target.value;
-                scheduleSelectedTrainees.clear(); 
-                if (courseId) {
-                    const { data: enrollments, error } = await supabaseClient.from('trainee_enrollments').select('trainees(id, full_name)').eq('course_id', courseId);
-                    if (error) console.error("Error fetching enrollments for selected course", error);
-                    else if (enrollments) {
-                        enrollments.forEach(e => {
-                            if (e.trainees) scheduleSelectedTrainees.set(e.trainees.id, e.trainees.full_name);
-                        });
-                    }
-                }
-                renderScheduleSelectedTrainees();
             });
         }
 
