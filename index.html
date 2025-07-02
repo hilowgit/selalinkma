@@ -31,6 +31,8 @@
             --danger-color: #EF4444;
             --completed-bg: #F3F4F6;
             --appointment-color: #10B981;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
         }
         body {
             font-family: 'Tajawal', sans-serif;
@@ -193,15 +195,41 @@
         .inventory-table th, .inventory-table td {
             vertical-align: middle;
             text-align: center;
+            padding: 1rem 0.75rem;
+        }
+        .inventory-table thead th {
+            border-bottom-width: 2px;
+            border-color: var(--border-color);
+            font-weight: 600;
         }
         .inventory-table .item-name-cell {
             text-align: right;
             font-weight: bold;
+            color: var(--heading-color);
         }
         .inventory-table .actions-cell {
             text-align: left;
-            width: 180px; /* Increased width for more buttons */
+            width: 180px; 
         }
+        .inventory-table tbody tr {
+            transition: background-color 0.15s ease-in-out;
+        }
+        .inventory-table tbody tr:hover {
+            background-color: var(--light-primary);
+        }
+        .inventory-table .actions-cell .btn {
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            background-color: #fff;
+        }
+        .balance-ok { color: var(--success-color); }
+        .balance-low { color: var(--warning-color); }
+        .balance-danger { color: var(--danger-color); }
         .d-none {
             display: none !important;
         }
@@ -1441,6 +1469,12 @@
             displayInventory(inventoryData);
         }
 
+        function getBalanceClass(balance) {
+            if (balance <= 0) return 'balance-danger';
+            if (balance <= 10) return 'balance-low';
+            return 'balance-ok';
+        }
+
         function displayInventory(inventoryData) {
             const container = document.getElementById('inventory-results');
             if (inventoryData.length === 0) {
@@ -1449,14 +1483,14 @@
             }
 
             container.innerHTML = `
-                <table class="table table-bordered table-hover inventory-table">
+                <table class="table table-hover align-middle inventory-table">
                     <thead class="table-light">
                         <tr>
                             <th>الصنف</th>
                             <th>إجمالي الداخل</th>
                             <th>إجمالي الخارج</th>
                             <th>الرصيد الحالي</th>
-                            <th class="actions-cell">إجراءات</th>
+                            <th class="actions-cell text-start">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1468,22 +1502,23 @@
                                 </td>
                                 <td>${item.totalIn}</td>
                                 <td>${item.totalOut}</td>
-                                <td><strong>${item.balance}</strong></td>
-                                <td class="actions-cell">
+                                <td class="fw-bold ${getBalanceClass(item.balance)}">${item.balance}</td>
+                                <td class="actions-cell text-start" onclick="event.stopPropagation();">
                                     <div id="actions-view-${item.id}" class="btn-group">
-                                        <button class="btn btn-sm btn-info" onclick="openInventoryDetailModal('${item.id}', '${item.name}')" title="عرض التفاصيل"><i class="fas fa-list-ul"></i></button>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="toggleItemEditMode('${item.id}', true)" title="تعديل الاسم"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteInventoryItem('${item.id}', '${item.name}')" title="حذف الصنف"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-light" onclick="openInventoryDetailModal('${item.id}', '${item.name}')" title="عرض التفاصيل" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-list-ul text-info"></i></button>
+                                        <button class="btn btn-sm btn-light" onclick="toggleItemEditMode('${item.id}', true)" title="تعديل الاسم" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-edit text-primary"></i></button>
+                                        <button class="btn btn-sm btn-light" onclick="handleDeleteInventoryItem('${item.id}', '${item.name}')" title="حذف الصنف" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-trash text-danger"></i></button>
                                     </div>
                                     <div id="actions-edit-${item.id}" class="d-none btn-group">
-                                        <button class="btn btn-sm btn-success" onclick="handleUpdateInventoryItem('${item.id}')" title="حفظ"><i class="fas fa-check"></i></button>
-                                        <button class="btn btn-sm btn-secondary" onclick="toggleItemEditMode('${item.id}', false)" title="إلغاء"><i class="fas fa-times"></i></button>
+                                        <button class="btn btn-sm btn-light" onclick="handleUpdateInventoryItem('${item.id}')" title="حفظ"><i class="fas fa-check text-success"></i></button>
+                                        <button class="btn btn-sm btn-light" onclick="toggleItemEditMode('${item.id}', false)" title="إلغاء"><i class="fas fa-times text-secondary"></i></button>
                                     </div>
                                 </td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>`;
+            initializeTooltips();
         }
         
         function toggleItemEditMode(itemId, isEditing) {
@@ -1616,32 +1651,33 @@
             }
 
             body.innerHTML = `
-                <table class="table table-striped table-hover">
+                <table class="table table-striped table-hover align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>التاريخ</th>
                             <th>النوع</th>
                             <th>الكمية</th>
                             <th>البيان</th>
-                            <th>إجراءات</th>
+                            <th class="text-end">إجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${data.map(t => `
                             <tr>
                                 <td>${t.transaction_date}</td>
-                                <td>${t.transaction_type === 'in' ? '<span class="badge bg-success">داخل</span>' : '<span class="badge bg-danger">خارج</span>'}</td>
-                                <td>${t.quantity}</td>
-                                <td>${t.description || '-'}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="openTransactionModal('${t.id}')"><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteInventoryTransaction('${t.id}', '${itemId}', '${itemName}')"><i class="fas fa-trash"></i></button>
+                                <td>${t.transaction_type === 'in' ? '<span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">داخل</span>' : '<span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle">خارج</span>'}</td>
+                                <td class="fw-bold">${t.quantity}</td>
+                                <td class="text-muted">${t.description || '-'}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-light" onclick="openTransactionModal('${t.id}')" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
+                                    <button class="btn btn-sm btn-light" onclick="handleDeleteInventoryTransaction('${t.id}', '${itemId}', '${itemName}')" title="حذف"><i class="fas fa-trash text-danger"></i></button>
                                 </td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             `;
+            initializeTooltips();
         }
 
         function handleDeleteInventoryTransaction(transactionId, itemId, itemName) {
@@ -1773,6 +1809,11 @@
                 calendarDate.setMonth(calendarDate.getMonth() + 1);
                 renderCalendar();
             });
+        }
+        
+        function initializeTooltips() {
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
         }
 
         document.addEventListener('DOMContentLoaded', checkUser);
