@@ -200,7 +200,7 @@
         }
         .inventory-table .actions-cell {
             text-align: left;
-            width: 150px;
+            width: 180px; /* Increased width for more buttons */
         }
         .d-none {
             display: none !important;
@@ -336,7 +336,8 @@
         <div class="mb-3"><label class="form-label">تاريخ الموعد</label><input type="date" name="appointment_date" class="form-control" required></div>
         <div class="mb-3"><label class="form-label">الوصف (اختياري)</label><textarea name="description" class="form-control" rows="3"></textarea></div>
     </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الموعد</button></div></form></div></div></div>
-    <div class="modal fade" id="inventoryTransactionModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="inventoryTransactionForm"><div class="modal-header"><h5 class="modal-title">إضافة حركة مخزون</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">الصنف</label><select name="item_id" class="form-select" required></select></div><div class="mb-3"><label class="form-label">نوع الحركة</label><select name="transaction_type" class="form-select" required><option value="in">داخل (شراء)</option><option value="out">خارج (صرف)</option></select></div><div class="mb-3"><label class="form-label">الكمية</label><input type="number" name="quantity" class="form-control" required min="1"></div><div class="mb-3"><label class="form-label">التاريخ</label><input type="date" name="transaction_date" class="form-control" required></div><div class="mb-3"><label class="form-label">البيان (اختياري)</label><input type="text" name="description" class="form-control"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الحركة</button></div></form></div></div></div>
+    <div class="modal fade" id="inventoryTransactionModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="inventoryTransactionForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="inventoryTransactionModalTitle">إضافة حركة مخزون</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">الصنف</label><select name="item_id" class="form-select" required></select></div><div class="mb-3"><label class="form-label">نوع الحركة</label><select name="transaction_type" class="form-select" required><option value="in">داخل (شراء)</option><option value="out">خارج (صرف)</option></select></div><div class="mb-3"><label class="form-label">الكمية</label><input type="number" name="quantity" class="form-control" required min="1"></div><div class="mb-3"><label class="form-label">التاريخ</label><input type="date" name="transaction_date" class="form-control" required></div><div class="mb-3"><label class="form-label">البيان (اختياري)</label><input type="text" name="description" class="form-control"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الحركة</button></div></form></div></div></div>
+    <div class="modal fade" id="inventoryDetailModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="inventoryDetailModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="inventoryDetailModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -1182,11 +1183,13 @@
             const id = appointmentData.id;
             const dateString = appointmentData.appointment_date;
 
+            // This is the fix: Ensure 'id' is removed for insert operations
+            const dataToSubmit = { ...appointmentData };
             if (!id) {
-                delete appointmentData.id;
+                delete dataToSubmit.id;
             }
 
-            const sanitizedData = sanitizeData(appointmentData);
+            const sanitizedData = sanitizeData(dataToSubmit);
 
             const { error } = id
                 ? await supabaseClient.from('appointments').update(sanitizedData).eq('id', id)
@@ -1207,6 +1210,7 @@
 
         // --- INVENTORY LOGIC ---
         const inventoryTransactionModal = new bootstrap.Modal(document.getElementById('inventoryTransactionModal'));
+        const inventoryDetailModal = new bootstrap.Modal(document.getElementById('inventoryDetailModal'));
 
         async function fetchInventoryData(searchTerm = '') {
             showLoader('inventory-results');
@@ -1215,7 +1219,7 @@
             if(searchTerm) {
                 itemsQuery = itemsQuery.ilike('name', `%${searchTerm}%`);
             }
-            const { data: items, error: itemsError } = await itemsQuery;
+            const { data: items, error: itemsError } = await itemsQuery.order('name');
 
             if (itemsError) {
                 console.error("Error fetching inventory items", itemsError);
@@ -1268,13 +1272,14 @@
                                 <td>${item.totalOut}</td>
                                 <td><strong>${item.balance}</strong></td>
                                 <td class="actions-cell">
-                                    <div id="actions-view-${item.id}">
-                                        <button class="btn btn-sm btn-outline-primary" onclick="toggleItemEditMode('${item.id}', true)"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteInventoryItem('${item.id}', '${item.name}')"><i class="fas fa-trash"></i></button>
+                                    <div id="actions-view-${item.id}" class="btn-group">
+                                        <button class="btn btn-sm btn-info" onclick="openInventoryDetailModal('${item.id}', '${item.name}')" title="عرض التفاصيل"><i class="fas fa-list-ul"></i></button>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="toggleItemEditMode('${item.id}', true)" title="تعديل الاسم"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteInventoryItem('${item.id}', '${item.name}')" title="حذف الصنف"><i class="fas fa-trash"></i></button>
                                     </div>
-                                    <div id="actions-edit-${item.id}" class="d-none">
-                                        <button class="btn btn-sm btn-success" onclick="handleUpdateInventoryItem('${item.id}')"><i class="fas fa-check"></i></button>
-                                        <button class="btn btn-sm btn-secondary" onclick="toggleItemEditMode('${item.id}', false)"><i class="fas fa-times"></i></button>
+                                    <div id="actions-edit-${item.id}" class="d-none btn-group">
+                                        <button class="btn btn-sm btn-success" onclick="handleUpdateInventoryItem('${item.id}')" title="حفظ"><i class="fas fa-check"></i></button>
+                                        <button class="btn btn-sm btn-secondary" onclick="toggleItemEditMode('${item.id}', false)" title="إلغاء"><i class="fas fa-times"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -1355,19 +1360,101 @@
             else allInventoryItemsCache = data || [];
         }
 
-        async function openTransactionModal() {
+        async function openTransactionModal(transactionId = null) {
             const form = document.getElementById('inventoryTransactionForm');
             form.reset();
-            form.querySelector('[name="transaction_date"]').value = getTodayDateString();
+            const modalTitle = document.getElementById('inventoryTransactionModalTitle');
             
             const itemSelect = form.querySelector('[name="item_id"]');
             if (allInventoryItemsCache.length === 0) {
                 await cacheInventoryItems();
             }
-            
             itemSelect.innerHTML = allInventoryItemsCache.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
 
+            if (transactionId) {
+                modalTitle.textContent = 'تعديل حركة مخزون';
+                const { data, error } = await supabaseClient.from('inventory_transactions').select('*').eq('id', transactionId).single();
+                if (error || !data) {
+                    alert('خطأ: لم يتم العثور على الحركة.');
+                    return;
+                }
+                form.querySelector('[name="id"]').value = data.id;
+                form.querySelector('[name="item_id"]').value = data.item_id;
+                form.querySelector('[name="transaction_type"]').value = data.transaction_type;
+                form.querySelector('[name="quantity"]').value = data.quantity;
+                form.querySelector('[name="transaction_date"]').value = data.transaction_date;
+                form.querySelector('[name="description"]').value = data.description;
+            } else {
+                modalTitle.textContent = 'إضافة حركة مخزون';
+                form.querySelector('[name="id"]').value = '';
+                form.querySelector('[name="transaction_date"]').value = getTodayDateString();
+            }
+
             inventoryTransactionModal.show();
+        }
+        
+        async function openInventoryDetailModal(itemId, itemName) {
+            document.getElementById('inventoryDetailModalTitle').textContent = `تفاصيل حركات: ${itemName}`;
+            const body = document.getElementById('inventoryDetailModalBody');
+            body.innerHTML = '<div class="loader"><div class="spinner-border text-primary" role="status"></div></div>';
+            inventoryDetailModal.show();
+
+            const { data, error } = await supabaseClient
+                .from('inventory_transactions')
+                .select('*')
+                .eq('item_id', itemId)
+                .order('transaction_date', { ascending: false });
+
+            if (error) {
+                body.innerHTML = '<div class="alert alert-danger">خطأ في جلب الحركات.</div>';
+                return;
+            }
+
+            if (data.length === 0) {
+                body.innerHTML = '<div class="alert alert-info">لا توجد حركات مسجلة لهذا الصنف.</div>';
+                return;
+            }
+
+            body.innerHTML = `
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>النوع</th>
+                            <th>الكمية</th>
+                            <th>البيان</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map(t => `
+                            <tr>
+                                <td>${t.transaction_date}</td>
+                                <td>${t.transaction_type === 'in' ? '<span class="badge bg-success">داخل</span>' : '<span class="badge bg-danger">خارج</span>'}</td>
+                                <td>${t.quantity}</td>
+                                <td>${t.description || '-'}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="openTransactionModal('${t.id}')"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteInventoryTransaction('${t.id}', '${itemId}', '${itemName}')"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function handleDeleteInventoryTransaction(transactionId, itemId, itemName) {
+            confirmDeletion(async () => {
+                const { error } = await supabaseClient.from('inventory_transactions').delete().eq('id', transactionId);
+                if (error) {
+                    alert('خطأ في حذف الحركة.');
+                } else {
+                    alert('تم حذف الحركة بنجاح.');
+                    openInventoryDetailModal(itemId, itemName); // Refresh detail modal
+                    fetchInventoryData(); // Refresh main inventory table
+                }
+            }, 'هل أنت متأكد من حذف هذه الحركة؟ هذا الإجراء لا يمكن التراجع عنه.');
         }
 
         async function handleInventoryTransactionSubmit(event) {
@@ -1375,8 +1462,16 @@
             const form = event.target;
             const formData = new FormData(form);
             const transactionData = Object.fromEntries(formData.entries());
-            
-            const { error } = await supabaseClient.from('inventory_transactions').insert([transactionData]);
+            const id = transactionData.id;
+
+            const dataToSubmit = { ...transactionData };
+            if (id) {
+                delete dataToSubmit.id;
+            }
+
+            const { error } = id
+                ? await supabaseClient.from('inventory_transactions').update(dataToSubmit).eq('id', id)
+                : await supabaseClient.from('inventory_transactions').insert([dataToSubmit]);
 
             if (error) {
                 console.error("Error saving transaction:", error);
@@ -1385,6 +1480,14 @@
                 alert('تم حفظ الحركة بنجاح.');
                 inventoryTransactionModal.hide();
                 fetchInventoryData();
+                const detailModalElement = document.getElementById('inventoryDetailModal');
+                if (detailModalElement.classList.contains('show')) {
+                    const itemId = transactionData.item_id;
+                    const itemName = allInventoryItemsCache.find(i => i.id === itemId)?.name || '';
+                    if(itemId && itemName) {
+                       openInventoryDetailModal(itemId, itemName);
+                    }
+                }
             }
         }
 
@@ -1411,7 +1514,7 @@
             document.getElementById('addTraineeBtn').addEventListener('click', () => openTraineeModal());
             document.getElementById('addScheduleBtn').addEventListener('click', () => openScheduleModal());
             document.getElementById('addInventoryItemBtn').addEventListener('click', openInventoryItemModal);
-            document.getElementById('addInventoryTransactionBtn').addEventListener('click', openTransactionModal);
+            document.getElementById('addInventoryTransactionBtn').addEventListener('click', () => openTransactionModal());
 
             document.getElementById('traineeForm').addEventListener('submit', handleTraineeFormSubmit);
             document.getElementById('trainerForm').addEventListener('submit', handleTrainerFormSubmit);
