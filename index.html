@@ -83,7 +83,7 @@
         .search-results-dropdown {
             position: absolute; background: white; border: 1px solid var(--border-color);
             border-radius: 0.5rem; max-height: 200px; overflow-y: auto;
-            width: 100%; z-index: 1056; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%; z-index: 1060; /* Higher z-index for search dropdowns */
         }
         .search-results-dropdown .list-group-item { cursor: pointer; }
         .search-results-dropdown .list-group-item:hover { background-color: var(--light-primary); }
@@ -487,6 +487,10 @@
         let selectedCourses = new Map();
         let scheduleSelectedTrainees = new Map();
         let calendarDate = new Date();
+        let lastOpenedDetail = { itemId: null, itemName: null };
+        let transactionModalInstance;
+        let detailModalInstance;
+
 
         async function fetchTrainers(searchTerm = '') {
             showLoader('trainer-results');
@@ -1629,10 +1633,12 @@
                 form.querySelector('[name="transaction_date"]').value = getTodayDateString();
             }
 
-            inventoryTransactionModal.show();
+            detailModalInstance.hide();
+            setTimeout(() => transactionModalInstance.show(), 200);
         }
         
         async function openInventoryDetailModal(itemId, itemName) {
+            lastOpenedDetail = { itemId, itemName };
             document.getElementById('inventoryDetailModalTitle').textContent = `تفاصيل حركات: ${itemName}`;
             const body = document.getElementById('inventoryDetailModalBody');
             body.innerHTML = '<div class="loader"><div class="spinner-border text-primary" role="status"></div></div>';
@@ -1726,16 +1732,9 @@
                 alert('خطأ في حفظ الحركة.');
             } else {
                 alert('تم حفظ الحركة بنجاح.');
+                document.getElementById('inventoryTransactionModal')._transactionWasSaved = true;
                 inventoryTransactionModal.hide();
                 fetchInventoryData();
-                const detailModalElement = document.getElementById('inventoryDetailModal');
-                if (detailModalElement.classList.contains('show')) {
-                    const itemId = transactionData.item_id;
-                    const itemName = allInventoryItemsCache.find(i => i.id === itemId)?.name || '';
-                    if(itemId && itemName) {
-                       openInventoryDetailModal(itemId, itemName);
-                    }
-                }
             }
         }
         
@@ -1765,6 +1764,10 @@
 
         // --- APP INITIALIZATION ---
         function initializeApp() {
+            // Initialize Modals
+            transactionModalInstance = new bootstrap.Modal(document.getElementById('inventoryTransactionModal'));
+            detailModalInstance = new bootstrap.Modal(document.getElementById('inventoryDetailModal'));
+
             // Fetch initial data
             fetchSummaryData();
             fetchTrainees();
@@ -1813,6 +1816,16 @@
                 calendarDate.setMonth(calendarDate.getMonth() + 1);
                 renderCalendar();
             });
+            
+            // Modal chaining logic
+            const transactionModalEl = document.getElementById('inventoryTransactionModal');
+            transactionModalEl.addEventListener('hidden.bs.modal', () => {
+                if (!transactionModalEl._transactionWasSaved && lastOpenedDetail.itemId) {
+                    detailModalInstance.show();
+                }
+                transactionModalEl._transactionWasSaved = false; // Reset flag
+            });
+
         }
         
         function initializeTooltips() {
