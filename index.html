@@ -336,7 +336,15 @@
         <div class="mb-3"><label class="form-label">تاريخ الموعد</label><input type="date" name="appointment_date" class="form-control" required></div>
         <div class="mb-3"><label class="form-label">الوصف (اختياري)</label><textarea name="description" class="form-control" rows="3"></textarea></div>
     </div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الموعد</button></div></form></div></div></div>
-    <div class="modal fade" id="inventoryTransactionModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="inventoryTransactionForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="inventoryTransactionModalTitle">إضافة حركة مخزون</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">الصنف</label><select name="item_id" class="form-select" required></select></div><div class="mb-3"><label class="form-label">نوع الحركة</label><select name="transaction_type" class="form-select" required><option value="in">داخل (شراء)</option><option value="out">خارج (صرف)</option></select></div><div class="mb-3"><label class="form-label">الكمية</label><input type="number" name="quantity" class="form-control" required min="1"></div><div class="mb-3"><label class="form-label">التاريخ</label><input type="date" name="transaction_date" class="form-control" required></div><div class="mb-3"><label class="form-label">البيان (اختياري)</label><input type="text" name="description" class="form-control"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الحركة</button></div></form></div></div></div>
+    <div class="modal fade" id="inventoryTransactionModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="inventoryTransactionForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="inventoryTransactionModalTitle">إضافة حركة مخزون</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
+        <div class="mb-3 position-relative">
+            <label class="form-label">الصنف</label>
+            <input type="text" id="inventory-item-search-input" class="form-control" placeholder="ابحث عن صنف..." autocomplete="off">
+            <div id="inventory-item-search-results" class="search-results-dropdown d-none"></div>
+            <div id="selected-inventory-item-display" class="mt-2"></div>
+            <input type="hidden" name="item_id" required>
+        </div>
+        <div class="mb-3"><label class="form-label">نوع الحركة</label><select name="transaction_type" class="form-select" required><option value="in">داخل (شراء)</option><option value="out">خارج (صرف)</option></select></div><div class="mb-3"><label class="form-label">الكمية</label><input type="number" name="quantity" class="form-control" required min="1"></div><div class="mb-3"><label class="form-label">التاريخ</label><input type="date" name="transaction_date" class="form-control" required></div><div class="mb-3"><label class="form-label">البيان (اختياري)</label><input type="text" name="description" class="form-control"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الحركة</button></div></form></div></div></div>
     <div class="modal fade" id="inventoryDetailModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="inventoryDetailModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="inventoryDetailModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
 
     <!-- Bootstrap JS Bundle -->
@@ -1365,21 +1373,24 @@
             form.reset();
             const modalTitle = document.getElementById('inventoryTransactionModalTitle');
             
-            const itemSelect = form.querySelector('[name="item_id"]');
+            form.querySelector('[name="item_id"]').value = '';
+            document.getElementById('selected-inventory-item-display').innerHTML = '';
+            document.getElementById('inventory-item-search-input').value = '';
+
             if (allInventoryItemsCache.length === 0) {
                 await cacheInventoryItems();
             }
-            itemSelect.innerHTML = allInventoryItemsCache.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
 
             if (transactionId) {
                 modalTitle.textContent = 'تعديل حركة مخزون';
-                const { data, error } = await supabaseClient.from('inventory_transactions').select('*').eq('id', transactionId).single();
+                const { data, error } = await supabaseClient.from('inventory_transactions').select('*, inventory_items(name)').eq('id', transactionId).single();
                 if (error || !data) {
                     alert('خطأ: لم يتم العثور على الحركة.');
                     return;
                 }
                 form.querySelector('[name="id"]').value = data.id;
                 form.querySelector('[name="item_id"]').value = data.item_id;
+                document.getElementById('selected-inventory-item-display').innerHTML = `<span class="badge bg-primary">${data.inventory_items.name}</span>`;
                 form.querySelector('[name="transaction_type"]').value = data.transaction_type;
                 form.querySelector('[name="quantity"]').value = data.quantity;
                 form.querySelector('[name="transaction_date"]').value = data.transaction_date;
@@ -1464,6 +1475,11 @@
             const transactionData = Object.fromEntries(formData.entries());
             const id = transactionData.id;
 
+            if (!transactionData.item_id) {
+                alert('الرجاء اختيار صنف.');
+                return;
+            }
+
             const dataToSubmit = { ...transactionData };
             if (!id) {
                 delete dataToSubmit.id;
@@ -1489,6 +1505,29 @@
                     }
                 }
             }
+        }
+        
+        function renderInventoryItemSearchResults(searchTerm) {
+            const resultsContainer = document.getElementById('inventory-item-search-results');
+            if(!searchTerm) {
+                resultsContainer.classList.add('d-none');
+                return;
+            }
+            const filtered = allInventoryItemsCache.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            
+            if(filtered.length > 0) {
+                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(item => `<li class="list-group-item" onclick="selectInventoryItem('${item.id}', '${item.name}')">${item.name}</li>`).join('')}</ul>`;
+                resultsContainer.classList.remove('d-none');
+            } else {
+                resultsContainer.classList.add('d-none');
+            }
+        }
+
+        function selectInventoryItem(id, name) {
+            document.querySelector('#inventoryTransactionForm [name="item_id"]').value = id;
+            document.getElementById('selected-inventory-item-display').innerHTML = `<span class="badge bg-primary">${name}</span>`;
+            document.getElementById('inventory-item-search-input').value = '';
+            document.getElementById('inventory-item-search-results').classList.add('d-none');
         }
 
 
@@ -1525,6 +1564,7 @@
             
             document.getElementById('course-search-input').addEventListener('keyup', (e) => renderCourseSearchResults(e.target.value));
             document.getElementById('schedule-trainee-search-input').addEventListener('keyup', (e) => renderScheduleTraineeSearchResults(e.target.value));
+            document.getElementById('inventory-item-search-input').addEventListener('keyup', (e) => renderInventoryItemSearchResults(e.target.value));
             
             document.getElementById('courseStatus').addEventListener('change', function() {
                 toggleScheduleFormLock(this.checked);
