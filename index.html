@@ -565,12 +565,20 @@
             delete trainerData.id;
 
             if (cvFile && cvFile.size > 0) {
-                const filePath = `public/${Date.now()}-${cvFile.name}`;
-                const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile);
-                if (uploadError) { alert('خطأ في رفع الملف.'); return; }
-                const { data: urlData } = supabaseClient.storage.from('trainer-cvs').getPublicUrl(filePath);
-                trainerData.cv_url = urlData.publicUrl;
-            }
+    // *** FIX: Sanitize the filename to prevent URL encoding issues ***
+    const fileExt = cvFile.name.split('.').pop();
+    const newFileName = `${Date.now()}.${fileExt}`;
+    const filePath = `public/${newFileName}`;
+
+    const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile);
+    if (uploadError) {
+        console.error('Upload Error:', uploadError);
+        alert('خطأ في رفع الملف.'); 
+        return; 
+    }
+    const { data: urlData } = supabaseClient.storage.from('trainer-cvs').getPublicUrl(filePath);
+    trainerData.cv_url = urlData.publicUrl;
+}
 
             const sanitizedData = sanitizeData(trainerData);
             let response = id ? await supabaseClient.from('trainers').update(sanitizedData).eq('id', id) : await supabaseClient.from('trainers').insert([sanitizedData]);
