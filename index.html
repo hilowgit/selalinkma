@@ -240,6 +240,17 @@
         .clickable {
             cursor: pointer;
         }
+        /* --- Attendance Report Styles --- */
+        .attendance-report-table th, .attendance-report-table td {
+            text-align: center;
+            vertical-align: middle;
+            min-width: 80px;
+        }
+        .attendance-report-table .student-name {
+            text-align: right;
+            font-weight: bold;
+            min-width: 150px;
+        }
     </style>
 </head>
 <body>
@@ -272,6 +283,7 @@
                 <li class="nav-item" role="presentation"><button class="nav-link" id="trainees-tab" data-bs-toggle="tab" data-bs-target="#trainees-panel" type="button"><i class="fas fa-user-graduate me-2"></i>المتدربين</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="trainers-tab" data-bs-toggle="tab" data-bs-target="#trainers-panel" type="button"><i class="fas fa-chalkboard-teacher me-2"></i>المدربين</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-panel" type="button"><i class="fas fa-calendar-alt me-2"></i>الجدولة</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance-panel" type="button"><i class="fas fa-user-check me-2"></i>التفقد</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar-panel" type="button"><i class="fas fa-calendar-week me-2"></i>التقويم</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory-panel" type="button"><i class="fas fa-boxes-stacked me-2"></i>الجرد</button></li>
             </ul>
@@ -290,6 +302,12 @@
                         <button class="btn btn-outline-primary" type="button" id="schedule-search-btn"><i class="fas fa-search"></i></button>
                     </div>
                     <div id="schedule-results" class="mt-4"></div>
+                </div>
+                 <div class="tab-pane fade p-3" id="attendance-panel" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="m-0">تقارير التفقد</h4>
+                    </div>
+                    <div id="attendance-course-list" class="row"></div>
                 </div>
                 <div class="tab-pane fade p-3" id="calendar-panel" role="tabpanel">
                     <div id="calendar-container">
@@ -388,6 +406,7 @@
         <div class="mb-3"><label class="form-label">نوع الحركة</label><select name="transaction_type" class="form-select" required><option value="in">داخل (شراء)</option><option value="out">خارج (صرف)</option></select></div><div class="mb-3"><label class="form-label">الكمية</label><input type="number" name="quantity" class="form-control" required min="1"></div><div class="mb-3"><label class="form-label">التاريخ</label><input type="date" name="transaction_date" class="form-control" required></div><div class="mb-3"><label class="form-label">البيان (اختياري)</label><input type="text" name="description" class="form-control"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الحركة</button></div></form></div></div></div>
     <div class="modal fade" id="inventoryDetailModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="inventoryDetailModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="inventoryDetailModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
     <div class="modal fade" id="courseDetailModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="courseDetailModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="courseDetailModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
+    <div class="modal fade" id="attendanceReportModal" tabindex="-1"><div class="modal-dialog modal-fullscreen"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="attendanceReportModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="attendanceReportModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -490,6 +509,7 @@
         let lastOpenedDetail = { itemId: null, itemName: null };
         let transactionModalInstance;
         let detailModalInstance;
+        let attendanceReportModal;
 
 
         async function fetchTrainers(searchTerm = '') {
@@ -1770,18 +1790,149 @@
             document.getElementById('inventory-item-search-results').classList.add('d-none');
         }
 
+        // --- ATTENDANCE REPORT LOGIC ---
+        async function fetchCoursesForAttendance() {
+            showLoader('attendance-course-list');
+            const { data, error } = await supabaseClient
+                .from('schedules')
+                .select('id, start_date, end_date, courses(id, name)')
+                .order('start_date', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching courses for attendance:', error);
+                document.getElementById('attendance-course-list').innerHTML = '<div class="alert alert-danger">خطأ في جلب الكورسات.</div>';
+            } else {
+                displayCoursesForAttendance(data);
+            }
+        }
+
+        function displayCoursesForAttendance(schedules) {
+            const container = document.getElementById('attendance-course-list');
+            if (!schedules || schedules.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">لا توجد كورسات مجدولة لعرض تقارير التفقد.</div>';
+                return;
+            }
+            container.innerHTML = schedules.map(schedule => `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="result-card clickable h-100" onclick="openAttendanceReportModal('${schedule.id}', '${schedule.courses.name}', '${schedule.start_date}', '${schedule.end_date}')">
+                        <h5><i class="fas fa-book-reader me-2"></i>${schedule.courses.name}</h5>
+                        <p class="mb-0 text-muted small"><i class="far fa-clock me-2"></i>${schedule.start_date} إلى ${schedule.end_date}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function openAttendanceReportModal(scheduleId, courseName, startDate, endDate) {
+            document.getElementById('attendanceReportModalTitle').textContent = `تقرير تفقد: ${courseName}`;
+            const body = document.getElementById('attendanceReportModalBody');
+            body.innerHTML = showLoader('attendanceReportModalBody');
+            attendanceReportModal.show();
+
+            // 1. Fetch all students for the course
+            const { data: enrollments, error: enrollError } = await supabaseClient
+                .from('schedules')
+                .select('courses(trainee_enrollments(trainees(id, full_name)))')
+                .eq('id', scheduleId)
+                .single();
+
+            if (enrollError || !enrollments) {
+                body.innerHTML = '<div class="alert alert-danger">خطأ في جلب قائمة الطلاب.</div>';
+                return;
+            }
+            
+            const students = enrollments.courses.trainee_enrollments.map(e => e.trainees).filter(Boolean);
+
+            // 2. Fetch all attendance records for this schedule
+            const { data: attendanceRecords, error: attendanceError } = await supabaseClient
+                .from('attendance')
+                .select('trainee_id, attendance_date, status')
+                .eq('schedule_id', scheduleId);
+
+            if (attendanceError) {
+                body.innerHTML = '<div class="alert alert-danger">خطأ في جلب سجلات التفقد.</div>';
+                return;
+            }
+
+            // 3. Process data
+            const reportData = {
+                students: {},
+                dates: new Set()
+            };
+
+            students.forEach(student => {
+                reportData.students[student.id] = {
+                    name: student.full_name,
+                    attendance: {}
+                };
+            });
+
+            attendanceRecords.forEach(record => {
+                reportData.dates.add(record.attendance_date);
+                if (reportData.students[record.trainee_id]) {
+                    reportData.students[record.trainee_id].attendance[record.attendance_date] = record.status;
+                }
+            });
+
+            const sortedDates = Array.from(reportData.dates).sort();
+
+            // 4. Render table
+            body.innerHTML = generateAttendanceReportHTML(reportData, sortedDates);
+        }
+
+        function generateAttendanceReportHTML(reportData, dates) {
+            if (Object.keys(reportData.students).length === 0) {
+                return '<div class="alert alert-info">لا يوجد طلاب مسجلون في هذا الكورس.</div>';
+            }
+
+            let tableHTML = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped attendance-report-table">
+                        <thead>
+                            <tr>
+                                <th class="student-name">اسم الطالب</th>
+                                ${dates.map(date => `<th>${date}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            for (const studentId in reportData.students) {
+                const student = reportData.students[studentId];
+                tableHTML += `<tr><td class="student-name">${student.name}</td>`;
+                dates.forEach(date => {
+                    const status = student.attendance[date] || '-';
+                    let badgeClass = 'bg-secondary';
+                    if (status === 'حاضر') badgeClass = 'bg-success';
+                    else if (status === 'غائب') badgeClass = 'bg-danger';
+                    else if (status === 'متأخر') badgeClass = 'bg-warning text-dark';
+                    tableHTML += `<td><span class="badge ${badgeClass}">${status}</span></td>`;
+                });
+                tableHTML += `</tr>`;
+            }
+
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            return tableHTML;
+        }
+
 
         // --- APP INITIALIZATION ---
         function initializeApp() {
             // Initialize Modals
             transactionModalInstance = new bootstrap.Modal(document.getElementById('inventoryTransactionModal'));
             detailModalInstance = new bootstrap.Modal(document.getElementById('inventoryDetailModal'));
+            attendanceReportModal = new bootstrap.Modal(document.getElementById('attendanceReportModal'));
+
 
             // Fetch initial data
             fetchSummaryData();
             fetchTrainees();
             fetchTrainers();
             fetchSchedules();
+            fetchCoursesForAttendance();
             cacheAllTrainees();
             cacheAllTrainers();
             renderCalendar();
@@ -1826,6 +1977,9 @@
                 renderCalendar();
             });
             
+            // Add listener for the new attendance tab
+            document.getElementById('attendance-tab').addEventListener('shown.bs.tab', fetchCoursesForAttendance);
+
             // Modal chaining logic
             const transactionModalEl = document.getElementById('inventoryTransactionModal');
             transactionModalEl.addEventListener('hidden.bs.modal', () => {
