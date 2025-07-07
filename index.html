@@ -25,10 +25,16 @@
             --heading-color: #1F2937;
             --border-color: #E5E7EB;
             --danger-color: #EF4444;
+            --danger-bg: #FEF2F2;
+            --danger-border: #FEE2E2;
             --completed-bg: #F3F4F6;
             --appointment-color: #10B981;
             --success-color: #10B981;
-            --warning-color: #F59E0B;
+            --success-bg: #F0FDF4;
+            --success-border: #D1FAE5;
+            --warning-color: #D97706;
+            --warning-bg: #FFFBEB;
+            --warning-border: #FEF3C7;
         }
         body {
             font-family: 'Tajawal', sans-serif;
@@ -261,11 +267,31 @@
             background-color: var(--light-primary);
             z-index: 3;
         }
+        .attendance-report-table .notes-cell {
+            min-width: 200px;
+        }
         .attendance-report-table .form-select {
             min-width: 100px;
             padding: 0.25rem 0.5rem;
             font-size: 0.875rem;
             border-radius: 0.375rem;
+            border-width: 2px;
+            font-weight: 500;
+        }
+        .form-select.status-present {
+            background-color: var(--success-bg);
+            border-color: var(--success-border);
+            color: var(--success-color);
+        }
+        .form-select.status-absent {
+            background-color: var(--danger-bg);
+            border-color: var(--danger-border);
+            color: var(--danger-color);
+        }
+        .form-select.status-late {
+            background-color: var(--warning-bg);
+            border-color: var(--warning-border);
+            color: var(--warning-color);
         }
     </style>
 </head>
@@ -433,6 +459,7 @@
         // !! تم وضع بيانات الاتصال الخاصة بك هنا !!
         // !! تذكر: أضف جدول 'appointments' و 'inventory_items' و 'inventory_transactions'
         // !! تذكر: أضف حقل 'notes' من نوع 'text' إلى جدول 'trainees'
+        // !! تذكر: أضف حقل 'notes' من نوع 'text' إلى جدول 'attendance' لحفظ الملاحظات اليومية
         // =================================================================================
         const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0';
@@ -1844,22 +1871,31 @@
             body.innerHTML = showLoader('attendanceReportModalBody');
             attendanceReportModal.show();
 
-            const { data: enrollments, error: enrollError } = await supabaseClient
-                .from('schedules')
-                .select('courses(trainee_enrollments(trainees(id, full_name)))')
-                .eq('id', scheduleId)
-                .single();
+            // Get course ID from schedule
+            const { data: scheduleData, error: scheduleErr } = await supabaseClient.from('schedules').select('course_id').eq('id', scheduleId).single();
+            if (scheduleErr || !scheduleData) {
+                 body.innerHTML = '<div class="alert alert-danger">خطأ في تحديد الكورس.</div>';
+                 return;
+            }
+            const courseId = scheduleData.course_id;
 
-            if (enrollError || !enrollments) {
+            // 1. Fetch all students and their enrollment notes
+            const { data: enrollments, error: enrollError } = await supabaseClient
+                .from('trainee_enrollments')
+                .select('notes, trainees(id, full_name)')
+                .eq('course_id', courseId);
+
+            if (enrollError) {
                 body.innerHTML = '<div class="alert alert-danger">خطأ في جلب قائمة الطلاب.</div>';
                 return;
             }
             
-            const students = enrollments.courses.trainee_enrollments.map(e => e.trainees).filter(Boolean);
+            const students = enrollments.map(e => ({...e.trainees, enrollment_notes: e.notes })).filter(s => s.id);
 
+            // 2. Fetch all attendance records for this schedule
             const { data: attendanceRecords, error: attendanceError } = await supabaseClient
                 .from('attendance')
-                .select('trainee_id, attendance_date, status')
+                .select('trainee_id, attendance_date, status, notes')
                 .eq('schedule_id', scheduleId);
 
             if (attendanceError) {
@@ -1867,6 +1903,7 @@
                 return;
             }
 
+            // 3. Process data
             const reportData = { students: {}, dates: new Set() };
             students.forEach(student => {
                 reportData.students[student.id] = { name: student.full_name, attendance: {} };
@@ -1874,17 +1911,38 @@
             attendanceRecords.forEach(record => {
                 reportData.dates.add(record.attendance_date);
                 if (reportData.students[record.trainee_id]) {
-                    reportData.students[record.trainee_id].attendance[record.attendance_date] = record.status;
+                    reportData.students[record.trainee_id].attendance[record.attendance_date] = {
+                        status: record.status,
+                        notes: record.notes
+                    };
                 }
             });
             const sortedDates = Array.from(reportData.dates).sort();
 
             body.innerHTML = generateAttendanceReportHTML(reportData, sortedDates);
+            
+            // Add event listeners for coloring the dropdowns
+            document.querySelectorAll('.attendance-report-table .form-select').forEach(select => {
+                applySelectColor(select);
+                select.addEventListener('change', () => applySelectColor(select));
+            });
+
 
             const saveBtn = document.getElementById('saveAttendanceReportBtn');
             const newSaveBtn = saveBtn.cloneNode(true);
             saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
             newSaveBtn.addEventListener('click', () => handleSaveAttendanceReport(scheduleId));
+        }
+        
+        function applySelectColor(selectElement) {
+            selectElement.classList.remove('status-present', 'status-absent', 'status-late');
+            if (selectElement.value === 'حاضر') {
+                selectElement.classList.add('status-present');
+            } else if (selectElement.value === 'غائب') {
+                selectElement.classList.add('status-absent');
+            } else if (selectElement.value === 'متأخر') {
+                selectElement.classList.add('status-late');
+            }
         }
 
         function generateAttendanceReportHTML(reportData, dates) {
@@ -1899,6 +1957,7 @@
                             <tr>
                                 <th class="student-name">اسم الطالب</th>
                                 ${dates.map(date => `<th>${date}</th>`).join('')}
+                                <th class="notes-cell">ملاحظات اليوم</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1907,8 +1966,12 @@
             for (const studentId in reportData.students) {
                 const student = reportData.students[studentId];
                 tableHTML += `<tr><td class="student-name">${student.name}</td>`;
+                
+                let lastDate = dates.length > 0 ? dates[dates.length-1] : null;
+                
                 dates.forEach(date => {
-                    const status = student.attendance[date] || 'غائب'; // Default to absent
+                    const attendance = student.attendance[date] || {};
+                    const status = attendance.status || 'غائب';
                     tableHTML += `
                         <td>
                             <select class="form-select form-select-sm" data-trainee-id="${studentId}" data-date="${date}">
@@ -1919,6 +1982,21 @@
                         </td>
                     `;
                 });
+
+                // Add notes cell at the end of the row
+                const lastAttendance = lastDate ? (student.attendance[lastDate] || {}) : {};
+                const note = lastAttendance.notes || '';
+                 tableHTML += `
+                    <td class="notes-cell">
+                        <input type="text" class="form-control form-control-sm note-input" 
+                               placeholder="ملاحظة ليوم ${lastDate || ''}" 
+                               data-trainee-id="${studentId}" 
+                               data-date="${lastDate || ''}" 
+                               value="${note}" 
+                               ${!lastDate ? 'disabled' : ''}>
+                    </td>
+                `;
+                
                 tableHTML += `</tr>`;
             }
 
@@ -1932,16 +2010,37 @@
 
         async function handleSaveAttendanceReport(scheduleId) {
             const selects = document.querySelectorAll('#attendanceReportModalBody select');
+            const notes = document.querySelectorAll('#attendanceReportModalBody .note-input');
             const recordsToUpsert = [];
 
+            const attendanceMap = new Map();
+
             selects.forEach(select => {
-                recordsToUpsert.push({
-                    schedule_id: scheduleId,
-                    trainee_id: select.dataset.traineeId,
-                    attendance_date: select.dataset.date,
-                    status: select.value
-                });
+                const key = `${select.dataset.traineeId}-${select.dataset.date}`;
+                if (!attendanceMap.has(key)) {
+                    attendanceMap.set(key, {});
+                }
+                attendanceMap.get(key).status = select.value;
             });
+            
+            notes.forEach(note => {
+                const key = `${note.dataset.traineeId}-${note.dataset.date}`;
+                 if (attendanceMap.has(key)) {
+                    attendanceMap.get(key).notes = note.value;
+                }
+            });
+
+            for (const [key, value] of attendanceMap.entries()) {
+                const [trainee_id, attendance_date] = key.split('-');
+                 recordsToUpsert.push({
+                    schedule_id: scheduleId,
+                    trainee_id: trainee_id,
+                    attendance_date: attendance_date,
+                    status: value.status,
+                    notes: value.notes || null
+                });
+            }
+
 
             if (recordsToUpsert.length > 0) {
                 const { error } = await supabaseClient.from('attendance').upsert(recordsToUpsert, {
