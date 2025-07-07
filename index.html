@@ -1871,26 +1871,24 @@
             body.innerHTML = showLoader('attendanceReportModalBody');
             attendanceReportModal.show();
 
-            // Get course ID from schedule
-            const { data: scheduleData, error: scheduleErr } = await supabaseClient.from('schedules').select('course_id').eq('id', scheduleId).single();
-            if (scheduleErr || !scheduleData) {
-                 body.innerHTML = '<div class="alert alert-danger">خطأ في تحديد الكورس.</div>';
-                 return;
-            }
-            const courseId = scheduleData.course_id;
+            // 1. Fetch all students and their enrollment notes via the schedule
+            const { data: scheduleDetails, error: enrollError } = await supabaseClient
+                .from('schedules')
+                .select('courses(id, name, trainee_enrollments(notes, trainees(id, full_name)))')
+                .eq('id', scheduleId)
+                .single();
 
-            // 1. Fetch all students and their enrollment notes
-            const { data: enrollments, error: enrollError } = await supabaseClient
-                .from('trainee_enrollments')
-                .select('notes, trainees(id, full_name)')
-                .eq('course_id', courseId);
-
-            if (enrollError) {
-                body.innerHTML = '<div class="alert alert-danger">خطأ في جلب قائمة الطلاب.</div>';
+            if (enrollError || !scheduleDetails || !scheduleDetails.courses || !scheduleDetails.courses.trainee_enrollments) {
+                body.innerHTML = '<div class="alert alert-danger">خطأ في جلب قائمة الطلاب. تأكد من صحة العلاقات بين الجداول في Supabase.</div>';
+                console.error("Enrollment fetch error:", enrollError);
                 return;
             }
             
-            const students = enrollments.map(e => ({...e.trainees, enrollment_notes: e.notes })).filter(s => s.id);
+            const enrollments = scheduleDetails.courses.trainee_enrollments;
+            const students = enrollments.map(e => {
+                if (!e.trainees) return null; // Guard against null trainee relationship
+                return {...e.trainees, enrollment_notes: e.notes };
+            }).filter(Boolean); // Filter out any nulls
 
             // 2. Fetch all attendance records for this schedule
             const { data: attendanceRecords, error: attendanceError } = await supabaseClient
