@@ -25,16 +25,10 @@
             --heading-color: #1F2937;
             --border-color: #E5E7EB;
             --danger-color: #EF4444;
-            --danger-bg: #FEF2F2;
-            --danger-border: #FEE2E2;
             --completed-bg: #F3F4F6;
             --appointment-color: #10B981;
             --success-color: #10B981;
-            --success-bg: #F0FDF4;
-            --success-border: #D1FAE5;
-            --warning-color: #D97706;
-            --warning-bg: #FFFBEB;
-            --warning-border: #FEF3C7;
+            --warning-color: #F59E0B;
         }
         body {
             font-family: 'Tajawal', sans-serif;
@@ -246,11 +240,11 @@
         .clickable {
             cursor: pointer;
         }
-        /* --- Attendance Report Styles --- */
+        /* --- Attendance Report Styles (IMPROVED) --- */
         .attendance-report-table th, .attendance-report-table td {
             text-align: center;
             vertical-align: middle;
-            min-width: 110px;
+            padding: 0.75rem;
         }
         .attendance-report-table .student-name {
             text-align: right;
@@ -258,40 +252,46 @@
             min-width: 180px;
             position: sticky;
             right: 0;
-            background-color: var(--card-bg);
+            background-color: #fff; /* Changed for better contrast */
             z-index: 2;
+            border-left: 2px solid var(--primary-color);
         }
         .attendance-report-table thead th {
             position: sticky;
             top: 0;
             background-color: var(--light-primary);
             z-index: 3;
+            font-weight: 600;
         }
-        .attendance-report-table .notes-cell {
-            min-width: 200px;
+        .attendance-report-table thead th.student-name {
+            z-index: 4; /* Ensure student name header is on top */
         }
         .attendance-report-table .form-select {
             min-width: 100px;
             padding: 0.25rem 0.5rem;
             font-size: 0.875rem;
             border-radius: 0.375rem;
-            border-width: 2px;
-            font-weight: 500;
+            border: 1px solid var(--border-color);
+            box-shadow: none;
         }
-        .form-select.status-present {
-            background-color: var(--success-bg);
-            border-color: var(--success-border);
-            color: var(--success-color);
+        .attendance-report-table tbody tr:hover {
+            background-color: #f8f9fa;
         }
-        .form-select.status-absent {
-            background-color: var(--danger-bg);
-            border-color: var(--danger-border);
-            color: var(--danger-color);
+        .attendance-header-date {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
-        .form-select.status-late {
-            background-color: var(--warning-bg);
-            border-color: var(--warning-border);
-            color: var(--warning-color);
+        .delete-date-btn {
+            padding: 0.1rem 0.4rem;
+            line-height: 1;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        .delete-date-btn:hover {
+            opacity: 1;
         }
     </style>
 </head>
@@ -459,7 +459,6 @@
         // !! تم وضع بيانات الاتصال الخاصة بك هنا !!
         // !! تذكر: أضف جدول 'appointments' و 'inventory_items' و 'inventory_transactions'
         // !! تذكر: أضف حقل 'notes' من نوع 'text' إلى جدول 'trainees'
-        // !! تذكر: أضف حقل 'notes' من نوع 'text' إلى جدول 'attendance' لحفظ الملاحظات اليومية
         // =================================================================================
         const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0';
@@ -626,7 +625,7 @@
                 const { error: uploadError } = await supabaseClient.storage.from('trainer-cvs').upload(filePath, cvFile);
                 if (uploadError) {
                     console.error('Upload Error:', uploadError);
-                    Swal.fire('خطأ', 'حدث خطأ أثناء رفع ملف السيرة الذاتية.', 'error');
+                    Swal.fire('خطأ!', 'حدث خطأ أثناء رفع الملف.', 'error');
                     return; 
                 }
                 const { data: urlData } = supabaseClient.storage.from('trainer-cvs').getPublicUrl(filePath);
@@ -637,17 +636,17 @@
             let response = id ? await supabaseClient.from('trainers').update(sanitizedData).eq('id', id) : await supabaseClient.from('trainers').insert([sanitizedData]);
             
             if (response.error) {
-                console.error('Error saving trainer:', response.error); Swal.fire('خطأ', 'لم يتم حفظ البيانات.', 'error');
+                console.error('Error saving trainer:', response.error); Swal.fire('خطأ!', 'لم يتم حفظ البيانات.', 'error');
             } else {
-                Swal.fire('تم', 'تم الحفظ بنجاح!', 'success'); trainerModal.hide(); fetchTrainers();
+                Swal.fire('تم!', 'تم الحفظ بنجاح.', 'success'); trainerModal.hide(); fetchTrainers();
             }
         }
         
         function handleDeleteTrainer(id, name) {
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('trainers').delete().eq('id', id);
-                if (error) Swal.fire('خطأ', 'لم يتم الحذف.', 'error');
-                else { Swal.fire('تم الحذف', '', 'success'); fetchTrainers(); }
+                if (error) Swal.fire('خطأ!', 'لم يتم الحذف.', 'error');
+                else { Swal.fire('تم الحذف!', `تم حذف المدرب ${name}.`, 'success'); fetchTrainers(); }
             }, `هل أنت متأكد من حذف المدرب "${name}"؟`);
         }
 
@@ -763,7 +762,7 @@
             const sanitizedData = sanitizeData(traineeData);
             let response = id ? await supabaseClient.from('trainees').update(sanitizedData).eq('id', id).select().single() : await supabaseClient.from('trainees').insert([sanitizedData]).select().single();
             
-            if (response.error) { Swal.fire('خطأ', 'لم يتم حفظ المتدرب.', 'error'); return; }
+            if (response.error) { Swal.fire('خطأ!', 'لم يتم حفظ بيانات المتدرب.', 'error'); return; }
             
             const traineeId = response.data.id;
             await supabaseClient.from('trainee_enrollments').delete().eq('trainee_id', traineeId);
@@ -773,14 +772,14 @@
                 await supabaseClient.from('trainee_enrollments').insert(enrollmentsToInsert);
             }
             
-            Swal.fire('تم', 'تم الحفظ بنجاح!', 'success'); traineeModal.hide(); fetchTrainees(); fetchSummaryData();
+            Swal.fire('تم!', 'تم الحفظ بنجاح.', 'success'); traineeModal.hide(); fetchTrainees(); fetchSummaryData();
         }
         
         function handleDeleteTrainee(id, name) {
              confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('trainees').delete().eq('id', id);
-                if (error) Swal.fire('خطأ', 'لم يتم الحذف.', 'error');
-                else { Swal.fire('تم الحذف', '', 'success'); fetchTrainees(); fetchSummaryData(); }
+                if (error) Swal.fire('خطأ!', 'لم يتم الحذف.', 'error');
+                else { Swal.fire('تم الحذف!', `تم حذف ${name}.`, 'success'); fetchTrainees(); fetchSummaryData(); }
             }, `هل أنت متأكد من حذف "${name}"؟`);
         }
         
@@ -924,7 +923,7 @@
             delete scheduleData.id;
             
             if (!scheduleData.course_id || !scheduleData.trainer_id) {
-                Swal.fire('تنبيه', 'الرجاء اختيار كورس ومدرب.', 'warning');
+                Swal.fire('تنبيه!', 'الرجاء اختيار كورس ومدرب.', 'warning');
                 return;
             }
 
@@ -939,13 +938,13 @@
                 ? await supabaseClient.from('schedules').update(sanitizedData).eq('id', id).select().single()
                 : await supabaseClient.from('schedules').insert([sanitizedData]).select().single();
             
-            if (scheduleError) { console.error(scheduleError); Swal.fire('خطأ', 'لم يتم حفظ الموعد.', 'error'); return; }
+            if (scheduleError) { console.error(scheduleError); Swal.fire('خطأ!', 'لم يتم حفظ الموعد.', 'error'); return; }
 
             // Only update enrollments if the course is not completed
             if (savedSchedule.status !== 'completed') {
                 const courseId = savedSchedule.course_id;
                 if (!courseId) {
-                    Swal.fire('تم', 'تم حفظ الموعد، ولكن لم يتم تحديد كورس لتحديث قائمة الطلاب.', 'info');
+                    Swal.fire('تم!', 'تم حفظ الموعد، ولكن لم يتم تحديد كورس لتحديث قائمة الطلاب.', 'info');
                     scheduleModal.hide(); fetchSchedules(); return;
                 }
 
@@ -966,7 +965,7 @@
                 }
             }
 
-            Swal.fire('تم', 'تم الحفظ بنجاح!', 'success');
+            Swal.fire('تم!', 'تم الحفظ بنجاح.', 'success');
             scheduleModal.hide();
             fetchSchedules();
             fetchTrainees();
@@ -975,8 +974,8 @@
         function handleDeleteSchedule(id, name) {
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('schedules').delete().eq('id', id);
-                if (error) Swal.fire('خطأ', 'لم يتم الحذف.', 'error');
-                else { Swal.fire('تم الحذف', '', 'success'); fetchSchedules(); }
+                if (error) Swal.fire('خطأ!', 'لم يتم الحذف.', 'error');
+                else { Swal.fire('تم الحذف!', `تم حذف موعد ${name}.`, 'success'); fetchSchedules(); }
             }, `هل أنت متأكد من حذف موعد "${name}"؟`);
         }
         
@@ -1064,8 +1063,8 @@
             }
 
             const { error } = await supabaseClient.from('attendance').upsert(records, { onConflict: 'schedule_id,trainee_id,attendance_date' });
-            if (error) { console.error('Error saving attendance:', error); Swal.fire('خطأ', 'لم يتم حفظ التفقد.', 'error'); } 
-            else { Swal.fire('تم', 'تم حفظ التفقد بنجاح!', 'success'); attendanceModal.hide(); }
+            if (error) { console.error('Error saving attendance:', error); Swal.fire('خطأ!', 'لم يتم حفظ التفقد.', 'error'); } 
+            else { Swal.fire('تم!', 'تم حفظ التفقد بنجاح.', 'success'); attendanceModal.hide(); }
         }
         
         const courseDetailModal = new bootstrap.Modal(document.getElementById('courseDetailModal'));
@@ -1168,17 +1167,17 @@
                 <div class="row mt-4">
                     <div class="col-12">
                          <div class="card h-100 shadow-sm">
-                            <div class="card-body p-4">
-                                <h5 class="card-title text-center">إدارة الكورسات</h5>
-                                <form id="addCourseForm" class="d-flex mt-3 mb-3">
-                                    <input type="text" name="name" class="form-control me-2" placeholder="اسم الكورس الجديد" required>
-                                    <button type="submit" class="btn btn-success flex-shrink-0">إضافة</button>
-                                </form>
-                                <ul id="coursesList" class="list-group list-group-flush">
-                                    ${courses && courses.length > 0 ? courses.map(c => `<li class="list-group-item d-flex justify-content-between align-items-center">${c.name}<button class="btn btn-sm btn-outline-danger" onclick="handleDeleteCourse('${c.id}', '${c.name}')"><i class="fas fa-trash"></i></button></li>`).join('') : '<li class="list-group-item">لا توجد كورسات.</li>'}
-                                </ul>
-                            </div>
-                        </div>
+                             <div class="card-body p-4">
+                                 <h5 class="card-title text-center">إدارة الكورسات</h5>
+                                 <form id="addCourseForm" class="d-flex mt-3 mb-3">
+                                     <input type="text" name="name" class="form-control me-2" placeholder="اسم الكورس الجديد" required>
+                                     <button type="submit" class="btn btn-success flex-shrink-0">إضافة</button>
+                                 </form>
+                                 <ul id="coursesList" class="list-group list-group-flush">
+                                     ${courses && courses.length > 0 ? courses.map(c => `<li class="list-group-item d-flex justify-content-between align-items-center">${c.name}<button class="btn btn-sm btn-outline-danger" onclick="handleDeleteCourse('${c.id}', '${c.name}')"><i class="fas fa-trash"></i></button></li>`).join('') : '<li class="list-group-item">لا توجد كورسات.</li>'}
+                                 </ul>
+                             </div>
+                         </div>
                     </div>
                 </div>`;
             document.getElementById('addCourseForm').addEventListener('submit', handleAddCourse);
@@ -1189,9 +1188,9 @@
             const form = event.target;
             const courseName = new FormData(form).get('name');
             const { error } = await supabaseClient.from('courses').insert([{ name: courseName }]);
-            if (error) Swal.fire('خطأ', `خطأ: ${error.message}`, 'error');
+            if (error) Swal.fire('خطأ!', `لم تتم الإضافة: ${error.message}`, 'error');
             else { 
-                Swal.fire('تم', 'تمت الإضافة!', 'success'); 
+                Swal.fire('تم!', 'تمت إضافة الكورس بنجاح.', 'success'); 
                 form.reset(); 
                 fetchSummaryData(); 
             }
@@ -1200,9 +1199,9 @@
         function handleDeleteCourse(id, name) {
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('courses').delete().eq('id', id);
-                if (error) Swal.fire('خطأ', 'لم يتم الحذف، قد يكون الكورس مرتبطاً بجدول.', 'error');
+                if (error) Swal.fire('خطأ!', 'لم يتم الحذف، قد يكون الكورس مرتبطاً بجدول.', 'error');
                 else { 
-                    Swal.fire('تم الحذف', '', 'success'); 
+                    Swal.fire('تم الحذف!', `تم حذف كورس ${name}.`, 'success'); 
                     fetchSummaryData(); 
                 }
             }, `هل أنت متأكد من حذف كورس "${name}"؟`);
@@ -1460,7 +1459,7 @@
         async function editAppointment(id) {
             const { data, error } = await supabaseClient.from('appointments').select('*').eq('id', id).single();
             if (error || !data) {
-                Swal.fire('خطأ', 'لم يتم العثور على الموعد.', 'error');
+                Swal.fire('خطأ!', 'لم يتم العثور على الموعد.', 'error');
                 return;
             }
             
@@ -1477,9 +1476,9 @@
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('appointments').delete().eq('id', id);
                 if (error) {
-                    Swal.fire('خطأ', 'لم يتم حذف الموعد.', 'error');
+                    Swal.fire('خطأ!', 'لم يتم حذف الموعد.', 'error');
                 } else {
-                    Swal.fire('تم', 'تم الحذف بنجاح.', 'success');
+                    Swal.fire('تم!', 'تم الحذف بنجاح.', 'success');
                     openAppointmentModal(dateString); 
                     renderCalendar();
                 }
@@ -1504,9 +1503,9 @@
 
             if (error) {
                 console.error('Error saving appointment:', error);
-                Swal.fire('خطأ', 'لم يتم حفظ الموعد.', 'error');
+                Swal.fire('خطأ!', 'لم يتم حفظ الموعد.', 'error');
             } else {
-                Swal.fire('تم', 'تم حفظ الموعد بنجاح!', 'success');
+                Swal.fire('تم!', 'تم حفظ الموعد بنجاح.', 'success');
                 form.reset();
                 form.querySelector('[name="id"]').value = '';
                 document.getElementById('appointment-form-section-title').textContent = 'إضافة موعد جديد';
@@ -1616,13 +1615,13 @@
         async function handleUpdateInventoryItem(itemId) {
             const newName = document.getElementById(`item-input-${itemId}`).value.trim();
             if (!newName) {
-                Swal.fire('تنبيه', 'اسم الصنف لا يمكن أن يكون فارغاً.', 'warning');
+                Swal.fire('تنبيه!', 'اسم الصنف لا يمكن أن يكون فارغاً.', 'warning');
                 return;
             }
             const { error } = await supabaseClient.from('inventory_items').update({ name: newName }).eq('id', itemId);
             if (error) {
                 console.error("Error updating item:", error);
-                Swal.fire('خطأ', 'لم يتم تحديث الصنف.', 'error');
+                Swal.fire('خطأ!', 'لم يتم تحديث الصنف.', 'error');
             } else {
                 fetchInventoryData(); // Refresh the table
             }
@@ -1632,9 +1631,9 @@
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('inventory_items').delete().eq('id', id);
                 if (error) {
-                    Swal.fire('خطأ', 'لم يتم حذف الصنف.', 'error');
+                    Swal.fire('خطأ!', 'لم يتم حذف الصنف.', 'error');
                 } else {
-                    Swal.fire('تم', 'تم حذف الصنف وجميع حركاته بنجاح.', 'success');
+                    Swal.fire('تم!', 'تم حذف الصنف وجميع حركاته بنجاح.', 'success');
                     fetchInventoryData();
                 }
             }, `هل أنت متأكد من حذف صنف "${name}"؟ سيتم حذف جميع الحركات المرتبطة به أيضاً.`);
@@ -1694,7 +1693,7 @@
                 modalTitle.textContent = 'تعديل حركة مخزون';
                 const { data, error } = await supabaseClient.from('inventory_transactions').select('*, inventory_items(name)').eq('id', transactionId).single();
                 if (error || !data) {
-                    Swal.fire('خطأ', 'لم يتم العثور على الحركة.', 'error');
+                    Swal.fire('خطأ!', 'لم يتم العثور على الحركة.', 'error');
                     return;
                 }
                 form.querySelector('[name="id"]').value = data.id;
@@ -1718,7 +1717,7 @@
             lastOpenedDetail = { itemId, itemName };
             document.getElementById('inventoryDetailModalTitle').textContent = `تفاصيل حركات: ${itemName}`;
             const body = document.getElementById('inventoryDetailModalBody');
-            body.innerHTML = '<div class="loader"><div class="spinner-border text-primary" role="status"></div></div>';
+            showLoader('inventoryDetailModalBody');
             inventoryDetailModal.show();
 
             const { data, error } = await supabaseClient
@@ -1771,9 +1770,9 @@
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('inventory_transactions').delete().eq('id', transactionId);
                 if (error) {
-                    Swal.fire('خطأ', 'لم يتم حذف الحركة.', 'error');
+                    Swal.fire('خطأ!', 'لم يتم حذف الحركة.', 'error');
                 } else {
-                    Swal.fire('تم', 'تم حذف الحركة بنجاح.', 'success');
+                    Swal.fire('تم!', 'تم حذف الحركة بنجاح.', 'success');
                     openInventoryDetailModal(itemId, itemName); // Refresh detail modal
                     fetchInventoryData(); // Refresh main inventory table
                 }
@@ -1788,7 +1787,7 @@
             const id = transactionData.id;
 
             if (!transactionData.item_id) {
-                Swal.fire('تنبيه', 'الرجاء اختيار صنف.', 'warning');
+                Swal.fire('تنبيه!', 'الرجاء اختيار صنف.', 'warning');
                 return;
             }
 
@@ -1801,9 +1800,9 @@
 
             if (error) {
                 console.error("Error saving transaction:", error);
-                Swal.fire('خطأ', 'لم يتم حفظ الحركة.', 'error');
+                Swal.fire('خطأ!', 'لم يتم حفظ الحركة.', 'error');
             } else {
-                Swal.fire('تم', 'تم حفظ الحركة بنجاح.', 'success');
+                Swal.fire('تم!', 'تم حفظ الحركة بنجاح.', 'success');
                 document.getElementById('inventoryTransactionModal')._transactionWasSaved = true;
                 inventoryTransactionModal.hide();
                 fetchInventoryData();
@@ -1866,89 +1865,60 @@
         }
 
         async function openAttendanceReportModal(scheduleId, courseName) {
+            const modalElement = document.getElementById('attendanceReportModal');
+            modalElement.dataset.scheduleId = scheduleId;
+            modalElement.dataset.courseName = courseName;
+
             document.getElementById('attendanceReportModalTitle').textContent = `تقرير تفقد: ${courseName}`;
             const body = document.getElementById('attendanceReportModalBody');
             showLoader('attendanceReportModalBody');
             attendanceReportModal.show();
 
-            // 1. Fetch all students for the course
-            const { data: scheduleDetails, error: enrollError } = await supabaseClient
+            const { data: enrollments, error: enrollError } = await supabaseClient
                 .from('schedules')
-                .select('courses(id, name, trainee_enrollments(trainees(id, full_name)))')
+                .select('courses(trainee_enrollments(trainees(id, full_name)))')
                 .eq('id', scheduleId)
                 .single();
 
-            if (enrollError || !scheduleDetails || !scheduleDetails.courses || !scheduleDetails.courses.trainee_enrollments) {
-                body.innerHTML = '<div class="alert alert-danger">خطأ في جلب قائمة الطلاب. تأكد من صحة العلاقات بين الجداول في Supabase.</div>';
-                console.error("Enrollment fetch error:", enrollError);
+            if (enrollError || !enrollments) {
+                body.innerHTML = '<div class="alert alert-danger">خطأ في جلب قائمة الطلاب.</div>';
                 return;
             }
             
-            const enrollments = scheduleDetails.courses.trainee_enrollments;
-            const students = enrollments.map(e => e.trainees).filter(Boolean);
+            const students = enrollments.courses.trainee_enrollments.map(e => e.trainees).filter(Boolean);
 
-            // 2. Fetch all attendance records for this schedule
             const { data: attendanceRecords, error: attendanceError } = await supabaseClient
                 .from('attendance')
-                .select('trainee_id, attendance_date, status, notes')
+                .select('trainee_id, attendance_date, status')
                 .eq('schedule_id', scheduleId);
 
             if (attendanceError) {
-                // ✅ IMPROVEMENT: Show a more specific error message
-                console.error("Error fetching attendance records:", attendanceError);
-                body.innerHTML = `<div class="alert alert-danger">
-                    <strong>خطأ في جلب سجلات التفقد.</strong><br>
-                    السبب الأكثر احتمالاً هو عدم وجود صلاحيات للوصول (RLS Policy) أو أن أحد الأعمدة (خاصة 'notes') غير موجود في جدول 'attendance'.<br>
-                    <small class="mt-2 d-block">تفاصيل الخطأ: ${attendanceError.message}</small>
-                </div>`;
+                body.innerHTML = '<div class="alert alert-danger">خطأ في جلب سجلات التفقد.</div>';
                 return;
             }
 
-            // 3. Process data
             const reportData = { students: {}, dates: new Set() };
             students.forEach(student => {
-                if(student) { // Ensure student is not null
-                    reportData.students[student.id] = { name: student.full_name, attendance: {} };
-                }
+                reportData.students[student.id] = { name: student.full_name, attendance: {} };
             });
             attendanceRecords.forEach(record => {
                 reportData.dates.add(record.attendance_date);
                 if (reportData.students[record.trainee_id]) {
-                    reportData.students[record.trainee_id].attendance[record.attendance_date] = {
-                        status: record.status,
-                        notes: record.notes
-                    };
+                    reportData.students[record.trainee_id].attendance[record.attendance_date] = record.status;
                 }
             });
             const sortedDates = Array.from(reportData.dates).sort();
 
-            body.innerHTML = generateAttendanceReportHTML(reportData, sortedDates);
-            
-            // Add event listeners for coloring the dropdowns
-            document.querySelectorAll('.attendance-report-table .form-select').forEach(select => {
-                applySelectColor(select);
-                select.addEventListener('change', () => applySelectColor(select));
-            });
-
+            body.innerHTML = generateAttendanceReportHTML(reportData, sortedDates, scheduleId);
+            initializeTooltips(); // Re-initialize tooltips for the new delete buttons
 
             const saveBtn = document.getElementById('saveAttendanceReportBtn');
             const newSaveBtn = saveBtn.cloneNode(true);
             saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
             newSaveBtn.addEventListener('click', () => handleSaveAttendanceReport(scheduleId));
         }
-        
-        function applySelectColor(selectElement) {
-            selectElement.classList.remove('status-present', 'status-absent', 'status-late');
-            if (selectElement.value === 'حاضر') {
-                selectElement.classList.add('status-present');
-            } else if (selectElement.value === 'غائب') {
-                selectElement.classList.add('status-absent');
-            } else if (selectElement.value === 'متأخر') {
-                selectElement.classList.add('status-late');
-            }
-        }
 
-        function generateAttendanceReportHTML(reportData, dates) {
+        function generateAttendanceReportHTML(reportData, dates, scheduleId) {
             if (Object.keys(reportData.students).length === 0) {
                 return '<div class="alert alert-info">لا يوجد طلاب مسجلون في هذا الكورس.</div>';
             }
@@ -1959,8 +1929,21 @@
                         <thead>
                             <tr>
                                 <th class="student-name">اسم الطالب</th>
-                                ${dates.map(date => `<th>${date}</th>`).join('')}
-                                <th class="notes-cell">ملاحظات اليوم</th>
+                                ${dates.map(date => `
+                                    <th>
+                                        <div class="attendance-header-date">
+                                            <span>${date}</span>
+                                            <button 
+                                                class="btn btn-outline-danger delete-date-btn" 
+                                                onclick="confirmDeleteAttendanceDate('${scheduleId}', '${date}')"
+                                                title="حذف هذا اليوم"
+                                                data-bs-toggle="tooltip"
+                                                data-bs-placement="top">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    </th>
+                                `).join('')}
                             </tr>
                         </thead>
                         <tbody>
@@ -1969,12 +1952,8 @@
             for (const studentId in reportData.students) {
                 const student = reportData.students[studentId];
                 tableHTML += `<tr><td class="student-name">${student.name}</td>`;
-                
-                let lastDate = dates.length > 0 ? dates[dates.length-1] : null;
-                
                 dates.forEach(date => {
-                    const attendance = student.attendance[date] || {};
-                    const status = attendance.status || 'غائب';
+                    const status = student.attendance[date] || 'غائب'; // Default to absent
                     tableHTML += `
                         <td>
                             <select class="form-select form-select-sm" data-trainee-id="${studentId}" data-date="${date}">
@@ -1985,21 +1964,6 @@
                         </td>
                     `;
                 });
-
-                // Add notes cell at the end of the row
-                const lastAttendance = lastDate ? (student.attendance[lastDate] || {}) : {};
-                const note = lastAttendance.notes || '';
-                 tableHTML += `
-                    <td class="notes-cell">
-                        <input type="text" class="form-control form-control-sm note-input" 
-                               placeholder="ملاحظة ليوم ${lastDate || ''}" 
-                               data-trainee-id="${studentId}" 
-                               data-date="${lastDate || ''}" 
-                               value="${note}" 
-                               ${!lastDate ? 'disabled' : ''}>
-                    </td>
-                `;
-                
                 tableHTML += `</tr>`;
             }
 
@@ -2010,43 +1974,43 @@
             `;
             return tableHTML;
         }
+        
+        function confirmDeleteAttendanceDate(scheduleId, date) {
+            const message = `هل أنت متأكد من حذف جميع سجلات التفقد ليوم ${date}؟ لا يمكن التراجع عن هذا الإجراء.`;
+            confirmDeletion(() => handleDeleteAttendanceDate(scheduleId, date), message);
+        }
+
+        async function handleDeleteAttendanceDate(scheduleId, date) {
+            const { error } = await supabaseClient
+                .from('attendance')
+                .delete()
+                .eq('schedule_id', scheduleId)
+                .eq('attendance_date', date);
+
+            if (error) {
+                console.error("Error deleting attendance date:", error);
+                Swal.fire('خطأ!', 'لم يتم حذف سجلات التفقد لهذا اليوم.', 'error');
+            } else {
+                Swal.fire('تم الحذف!', `تم حذف جميع سجلات يوم ${date} بنجاح.`, 'success');
+                const modalElement = document.getElementById('attendanceReportModal');
+                const courseName = modalElement.dataset.courseName;
+                // Refresh the modal content
+                openAttendanceReportModal(scheduleId, courseName);
+            }
+        }
 
         async function handleSaveAttendanceReport(scheduleId) {
             const selects = document.querySelectorAll('#attendanceReportModalBody select');
-            const notes = document.querySelectorAll('#attendanceReportModalBody .note-input');
             const recordsToUpsert = [];
 
-            const attendanceMap = new Map();
-
-            // Use a separator that won't appear in the data (UUIDs have hyphens)
-            const SEPARATOR = '|';
-
             selects.forEach(select => {
-                const key = `${select.dataset.traineeId}${SEPARATOR}${select.dataset.date}`;
-                if (!attendanceMap.has(key)) {
-                    attendanceMap.set(key, {});
-                }
-                attendanceMap.get(key).status = select.value;
-            });
-            
-            notes.forEach(note => {
-                const key = `${note.dataset.traineeId}${SEPARATOR}${note.dataset.date}`;
-                 if (attendanceMap.has(key)) {
-                    attendanceMap.get(key).notes = note.value;
-                }
-            });
-
-            for (const [key, value] of attendanceMap.entries()) {
-                const [trainee_id, attendance_date] = key.split(SEPARATOR);
-                 recordsToUpsert.push({
+                recordsToUpsert.push({
                     schedule_id: scheduleId,
-                    trainee_id: trainee_id,
-                    attendance_date: attendance_date,
-                    status: value.status,
-                    notes: value.notes || null
+                    trainee_id: select.dataset.traineeId,
+                    attendance_date: select.dataset.date,
+                    status: select.value
                 });
-            }
-
+            });
 
             if (recordsToUpsert.length > 0) {
                 const { error } = await supabaseClient.from('attendance').upsert(recordsToUpsert, {
