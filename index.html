@@ -266,14 +266,6 @@
         .attendance-report-table thead th.student-name {
             z-index: 4; /* Ensure student name header is on top */
         }
-        .attendance-report-table .form-select {
-            min-width: 100px;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-            border-radius: 0.375rem;
-            border: 1px solid var(--border-color);
-            box-shadow: none;
-        }
         .attendance-report-table tbody tr:hover {
             background-color: #f8f9fa;
         }
@@ -292,6 +284,35 @@
         }
         .delete-date-btn:hover {
             opacity: 1;
+        }
+        /* New styles for clickable attendance badges */
+        .attendance-status-badge {
+            padding: 0.35em 0.65em;
+            font-size: .85em;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: .375rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            user-select: none; /* Prevent text selection on click */
+            min-width: 55px;
+            display: inline-block;
+        }
+        .attendance-status-badge:active {
+            transform: scale(0.95);
+        }
+        .status-present {
+            background-color: var(--success-color);
+        }
+        .status-late {
+            background-color: var(--warning-color);
+        }
+        .status-absent {
+            background-color: var(--danger-color);
         }
     </style>
 </head>
@@ -1918,6 +1939,38 @@
             newSaveBtn.addEventListener('click', () => handleSaveAttendanceReport(scheduleId));
         }
 
+        function getStatusInfo(status) {
+            switch (status) {
+                case 'حاضر':
+                    return { text: 'حاضر', className: 'status-present' };
+                case 'متأخر':
+                    return { text: 'متأخر', className: 'status-late' };
+                case 'غائب':
+                default:
+                    return { text: 'غائب', className: 'status-absent' };
+            }
+        }
+
+        function cycleAttendanceStatus(element) {
+            const currentStatus = element.dataset.status;
+            let nextStatus;
+
+            if (currentStatus === 'حاضر') {
+                nextStatus = 'متأخر';
+            } else if (currentStatus === 'متأخر') {
+                nextStatus = 'غائب';
+            } else { // غائب
+                nextStatus = 'حاضر';
+            }
+
+            const statusInfo = getStatusInfo(nextStatus);
+
+            // Update element appearance and data
+            element.dataset.status = nextStatus;
+            element.textContent = statusInfo.text;
+            element.className = `attendance-status-badge ${statusInfo.className}`;
+        }
+
         function generateAttendanceReportHTML(reportData, dates, scheduleId) {
             if (Object.keys(reportData.students).length === 0) {
                 return '<div class="alert alert-info">لا يوجد طلاب مسجلون في هذا الكورس.</div>';
@@ -1954,13 +2007,17 @@
                 tableHTML += `<tr><td class="student-name">${student.name}</td>`;
                 dates.forEach(date => {
                     const status = student.attendance[date] || 'غائب'; // Default to absent
+                    const statusInfo = getStatusInfo(status);
                     tableHTML += `
                         <td>
-                            <select class="form-select form-select-sm" data-trainee-id="${studentId}" data-date="${date}">
-                                <option value="حاضر" ${status === 'حاضر' ? 'selected' : ''}>حاضر</option>
-                                <option value="غائب" ${status === 'غائب' ? 'selected' : ''}>غائب</option>
-                                <option value="متأخر" ${status === 'متأخر' ? 'selected' : ''}>متأخر</option>
-                            </select>
+                            <span 
+                                class="attendance-status-badge ${statusInfo.className}" 
+                                data-trainee-id="${studentId}" 
+                                data-date="${date}"
+                                data-status="${status}"
+                                onclick="cycleAttendanceStatus(this)">
+                                ${statusInfo.text}
+                            </span>
                         </td>
                     `;
                 });
@@ -2000,15 +2057,15 @@
         }
 
         async function handleSaveAttendanceReport(scheduleId) {
-            const selects = document.querySelectorAll('#attendanceReportModalBody select');
+            const badges = document.querySelectorAll('#attendanceReportModalBody .attendance-status-badge');
             const recordsToUpsert = [];
 
-            selects.forEach(select => {
+            badges.forEach(badge => {
                 recordsToUpsert.push({
                     schedule_id: scheduleId,
-                    trainee_id: select.dataset.traineeId,
-                    attendance_date: select.dataset.date,
-                    status: select.value
+                    trainee_id: badge.dataset.traineeId,
+                    attendance_date: badge.dataset.date,
+                    status: badge.dataset.status
                 });
             });
 
