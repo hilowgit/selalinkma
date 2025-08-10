@@ -314,6 +314,34 @@
         .status-absent {
             background-color: var(--danger-color);
         }
+        
+        /* --- Accordion Styles for Schedule --- */
+        .accordion-button {
+            font-weight: bold;
+            color: var(--heading-color);
+        }
+        .accordion-button:not(.collapsed) {
+            background-color: var(--light-primary);
+            color: var(--primary-color);
+            box-shadow: inset 0 -1px 0 var(--border-color);
+        }
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+        }
+        .accordion-item {
+            border: 1px solid var(--border-color);
+            border-radius: 12px !important; /* Use important to override bootstrap */
+            overflow: hidden; /* Ensures the radius is applied to children */
+            margin-bottom: 1rem;
+            background-color: transparent;
+        }
+        .accordion-item:first-of-type, .accordion-item:last-of-type {
+             border-radius: 12px !important;
+        }
+        .accordion-body {
+            padding: 1rem;
+            background-color: #fdfdff;
+        }
     </style>
 </head>
 <body>
@@ -477,9 +505,8 @@
     
     <script>
         // =================================================================================
-        // !! تم وضع بيانات الاتصال الخاصة بك هنا !!
-        // !! تذكر: أضف جدول 'appointments' و 'inventory_items' و 'inventory_transactions'
-        // !! تذكر: أضف حقل 'notes' من نوع 'text' إلى جدول 'trainees'
+        // !! ملاحظة هامة !!
+        // !! يجب إضافة حقل جديد باسم `category` من نوع `text` إلى جدول `courses` في قاعدة بيانات Supabase.
         // =================================================================================
         const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0';
@@ -804,60 +831,134 @@
             }, `هل أنت متأكد من حذف "${name}"؟`);
         }
         
+        // =================================================================================
+        // === UPDATED SCHEDULE LOGIC START ===
+        // =================================================================================
         async function fetchSchedules(searchTerm = '') {
             showLoader('schedule-results');
-            let query = supabaseClient.from('schedules').select(`*, courses!inner(name), trainers(full_name)`)
-                .order('status', { ascending: true, nullsFirst: false }) 
+
+            // 1. Fetch all schedules with course and trainer info
+            let schedulesQuery = supabaseClient.from('schedules')
+                .select(`*, courses!inner(id, name, category), trainers(full_name)`)
+                .order('status', { ascending: true, nullsFirst: false })
                 .order('start_date', { ascending: false });
 
             if (searchTerm) {
-                query = query.ilike('courses.name', `%${searchTerm}%`);
+                schedulesQuery = schedulesQuery.ilike('courses.name', `%${searchTerm}%`);
             }
 
-            const { data, error } = await query;
+            const { data: schedules, error: schedulesError } = await schedulesQuery;
 
-            if (error) {
-                console.error('Error fetching schedules:', error);
+            if (schedulesError) {
+                console.error('Error fetching schedules:', schedulesError);
                 document.getElementById('schedule-results').innerHTML = `<div class="alert alert-danger">حدث خطأ أثناء جلب المواعيد.</div>`;
-            } else {
-                displaySchedules(data);
+                return;
             }
+
+            // 2. Fetch all enrollments to calculate counts
+            const { data: enrollments, error: enrollmentsError } = await supabaseClient
+                .from('trainee_enrollments')
+                .select('course_id');
+
+            if (enrollmentsError) {
+                console.error('Error fetching enrollments:', enrollmentsError);
+                // Can still display schedules, just without counts
+                displaySchedules(schedules, new Map());
+                return;
+            }
+
+            // 3. Create enrollment counts map
+            const courseEnrollmentCounts = new Map();
+            if (enrollments) {
+                for (const enrollment of enrollments) {
+                    const count = courseEnrollmentCounts.get(enrollment.course_id) || 0;
+                    courseEnrollmentCounts.set(enrollment.course_id, count + 1);
+                }
+            }
+
+            // 4. Call display function
+            displaySchedules(schedules, courseEnrollmentCounts);
         }
-        
-        function displaySchedules(schedules) {
+
+        function displaySchedules(schedules, courseEnrollmentCounts) {
             const container = document.getElementById('schedule-results');
             if (!schedules || schedules.length === 0) {
                 container.innerHTML = `<div class="alert alert-info">لا توجد مواعيد مجدولة تطابق البحث.</div>`;
                 return;
             }
-            container.innerHTML = schedules.map(schedule => {
-                const isCompleted = schedule.status === 'completed';
-                const statusBadge = isCompleted 
-                    ? `<span class="badge bg-secondary status-badge">منتهي</span>`
-                    : `<span class="badge bg-success status-badge">نشط</span>`;
 
-                return `
-                <div class="result-card mb-3 ${isCompleted ? 'completed' : ''}">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div class="flex-grow-1">
-                            <div class="d-flex align-items-center mb-2">
-                                <h5 class="m-0"><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'N/A'}</h5>
-                                ${statusBadge}
+            // Group schedules by category
+            const schedulesByCategory = schedules.reduce((acc, schedule) => {
+                const category = schedule.courses.category || 'بدون تصنيف';
+                if (!acc[category]) {
+                    acc[category] = [];
+                }
+                acc[category].push(schedule);
+                return acc;
+            }, {});
+
+            // Build accordion HTML
+            let accordionHTML = '<div class="accordion" id="scheduleAccordion">';
+            let categoryIndex = 0;
+
+            for (const category in schedulesByCategory) {
+                const categorySchedules = schedulesByCategory[category];
+                let categoryTotalStudents = 0;
+
+                const coursesHTML = categorySchedules.map(schedule => {
+                    const studentCount = courseEnrollmentCounts.get(schedule.courses.id) || 0;
+                    categoryTotalStudents += studentCount;
+
+                    const isCompleted = schedule.status === 'completed';
+                    const statusBadge = isCompleted
+                        ? `<span class="badge bg-secondary status-badge">منتهي</span>`
+                        : `<span class="badge bg-success status-badge">نشط</span>`;
+
+                    return `
+                        <div class="result-card mb-3 ${isCompleted ? 'completed' : ''}">
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="m-0"><i class="fas fa-calendar-check me-2"></i>${schedule.courses ? schedule.courses.name : 'N/A'} <span class="text-muted fw-normal">(${studentCount})</span></h5>
+                                        ${statusBadge}
+                                    </div>
+                                    <p class="mb-1 text-muted small"><i class="fas fa-chalkboard-teacher me-2"></i>${schedule.trainers ? schedule.trainers.full_name : 'N/A'}</p>
+                                    <p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt me-2"></i>${schedule.hall_name || 'N/A'}</p>
+                                    <p class="mb-0 text-muted small"><i class="far fa-clock me-2"></i>${schedule.start_date || '?'} - ${schedule.end_date || '?'}</p>
+                                </div>
+                                <div class="d-flex flex-column gap-2 flex-shrink-0">
+                                    <button class="btn btn-sm btn-success" onclick="openAttendanceModal('${schedule.id}', '${schedule.courses.name}')" title="أخذ التفقد"><i class="fas fa-user-check"></i></button>
+                                    <button class="btn btn-sm btn-primary" onclick="openScheduleModal(true, '${schedule.id}')" title="تعديل الموعد"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : ''}')" title="حذف الموعد"><i class="fas fa-trash"></i></button>
+                                </div>
                             </div>
-                            <p class="mb-1 text-muted small"><i class="fas fa-chalkboard-teacher me-2"></i>${schedule.trainers ? schedule.trainers.full_name : 'N/A'}</p>
-                            <p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt me-2"></i>${schedule.hall_name || 'N/A'}</p>
-                            <p class="mb-0 text-muted small"><i class="far fa-clock me-2"></i>${schedule.start_date || '?'} - ${schedule.end_date || '?'}</p>
                         </div>
-                        <div class="d-flex flex-column gap-2 flex-shrink-0">
-                            <button class="btn btn-sm btn-success" onclick="openAttendanceModal('${schedule.id}', '${schedule.courses.name}')" title="أخذ التفقد"><i class="fas fa-user-check"></i></button>
-                            <button class="btn btn-sm btn-primary" onclick="openScheduleModal(true, '${schedule.id}')" title="تعديل الموعد"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-sm btn-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : ''}')" title="حذف الموعد"><i class="fas fa-trash"></i></button>
+                    `;
+                }).join('');
+
+                accordionHTML += `
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading-${categoryIndex}">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${categoryIndex}" aria-expanded="true" aria-controls="collapse-${categoryIndex}">
+                                ${category} <span class="badge bg-primary ms-auto me-2">${categoryTotalStudents} طالب</span>
+                            </button>
+                        </h2>
+                        <div id="collapse-${categoryIndex}" class="accordion-collapse collapse show" aria-labelledby="heading-${categoryIndex}" data-bs-parent="#scheduleAccordion">
+                            <div class="accordion-body">
+                                ${coursesHTML || '<p class="text-muted">لا توجد كورسات في هذا التصنيف.</p>'}
+                            </div>
                         </div>
                     </div>
-                </div>
                 `;
-            }).join('');
+                categoryIndex++;
+            }
+
+            accordionHTML += '</div>';
+            container.innerHTML = accordionHTML;
         }
+        // =================================================================================
+        // === UPDATED SCHEDULE LOGIC END ===
+        // =================================================================================
         
         const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
         
@@ -1188,16 +1289,32 @@
                 <div class="row mt-4">
                     <div class="col-12">
                          <div class="card h-100 shadow-sm">
-                             <div class="card-body p-4">
-                                 <h5 class="card-title text-center">إدارة الكورسات</h5>
-                                 <form id="addCourseForm" class="d-flex mt-3 mb-3">
-                                     <input type="text" name="name" class="form-control me-2" placeholder="اسم الكورس الجديد" required>
-                                     <button type="submit" class="btn btn-success flex-shrink-0">إضافة</button>
-                                 </form>
-                                 <ul id="coursesList" class="list-group list-group-flush">
-                                     ${courses && courses.length > 0 ? courses.map(c => `<li class="list-group-item d-flex justify-content-between align-items-center">${c.name}<button class="btn btn-sm btn-outline-danger" onclick="handleDeleteCourse('${c.id}', '${c.name}')"><i class="fas fa-trash"></i></button></li>`).join('') : '<li class="list-group-item">لا توجد كورسات.</li>'}
-                                 </ul>
-                             </div>
+                              <div class="card-body p-4">
+                                   <h5 class="card-title text-center">إدارة الكورسات</h5>
+                                   <form id="addCourseForm" class="row g-3 mt-3 mb-3 align-items-end">
+                                        <div class="col-sm">
+                                            <label for="newCourseName" class="form-label">اسم الكورس الجديد</label>
+                                            <input type="text" id="newCourseName" name="name" class="form-control" placeholder="مثال: شطرنج" required>
+                                        </div>
+                                        <div class="col-sm">
+                                            <label for="newCourseCategory" class="form-label">تصنيف الكورس</label>
+                                            <input type="text" id="newCourseCategory" name="category" class="form-control" placeholder="مثال: النادي الصيفي" required>
+                                        </div>
+                                        <div class="col-sm-auto">
+                                            <button type="submit" class="btn btn-success w-100">إضافة</button>
+                                        </div>
+                                   </form>
+                                   <ul id="coursesList" class="list-group list-group-flush">
+                                        ${courses && courses.length > 0 ? courses.map(c => `
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="fw-bold">${c.name}</span>
+                                                <small class="d-block text-muted">${c.category || 'بدون تصنيف'}</small>
+                                            </div>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteCourse('${c.id}', '${c.name}')"><i class="fas fa-trash"></i></button>
+                                        </li>`).join('') : '<li class="list-group-item">لا توجد كورسات.</li>'}
+                                   </ul>
+                              </div>
                          </div>
                     </div>
                 </div>`;
@@ -1207,13 +1324,16 @@
         async function handleAddCourse(event) {
             event.preventDefault();
             const form = event.target;
-            const courseName = new FormData(form).get('name');
-            const { error } = await supabaseClient.from('courses').insert([{ name: courseName }]);
+            const formData = new FormData(form);
+            const courseName = formData.get('name');
+            const courseCategory = formData.get('category');
+            const { error } = await supabaseClient.from('courses').insert([{ name: courseName, category: courseCategory }]);
             if (error) Swal.fire('خطأ!', `لم تتم الإضافة: ${error.message}`, 'error');
             else { 
                 Swal.fire('تم!', 'تمت إضافة الكورس بنجاح.', 'success'); 
                 form.reset(); 
                 fetchSummaryData(); 
+                fetchSchedules(); // Refresh schedule tab as well
             }
         }
         
@@ -1224,6 +1344,7 @@
                 else { 
                     Swal.fire('تم الحذف!', `تم حذف كورس ${name}.`, 'success'); 
                     fetchSummaryData(); 
+                    fetchSchedules(); // Refresh schedule tab as well
                 }
             }, `هل أنت متأكد من حذف كورس "${name}"؟`);
         }
