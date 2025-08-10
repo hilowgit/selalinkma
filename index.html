@@ -360,6 +360,37 @@
             border-radius: .375rem;
             transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
         }
+        
+        /* --- Improved Search Bar Styles --- */
+        .search-input-group {
+            border-radius: 0.75rem; /* 12px */
+            border: 1px solid var(--border-color);
+            transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+            overflow: hidden; /* To apply border-radius to children */
+            display: flex;
+        }
+        .search-input-group:focus-within {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            border-color: var(--primary-color);
+        }
+        .search-input-group .form-control {
+            border: none;
+            box-shadow: none !important;
+            flex-grow: 1;
+        }
+        .search-input-group .btn {
+            border: none;
+            background-color: transparent;
+            color: var(--text-color);
+            padding: 0 1.25rem;
+            border-right: 1px solid var(--border-color);
+            border-radius: 0;
+        }
+        .search-input-group .btn:hover {
+            background-color: var(--light-primary);
+            color: var(--primary-color);
+        }
+
     </style>
 </head>
 <body>
@@ -399,14 +430,14 @@
 
             <div class="tab-content pt-4" id="myTabContent">
                 <div class="tab-pane fade show active p-3" id="summary-panel" role="tabpanel"><div id="summary-content"></div></div>
-                <div class="tab-pane fade p-3" id="trainees-panel" role="tabpanel"><div class="d-flex justify-content-between align-items-center mb-4"><h4 class="m-0">قاعدة بيانات المتدربين</h4><button id="addTraineeBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة متدرب</button></div><div class="input-group mb-4"><input type="text" class="form-control" id="trainee-search-input" placeholder="أدخل اسم المتدرب للبحث..."><button class="btn btn-outline-primary" type="button" id="trainee-search-btn"><i class="fas fa-search"></i></button></div><div id="trainee-results" class="mt-4"></div></div>
-                <div class="tab-pane fade p-3" id="trainers-panel" role="tabpanel"><div class="d-flex justify-content-between align-items-center mb-4"><h4 class="m-0">قاعدة بيانات المدربين</h4><button id="addTrainerBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة مدرب</button></div><div class="input-group mb-4"><input type="text" class="form-control" id="trainer-search-input" placeholder="أدخل اسم المدرب للبحث..."><button class="btn btn-outline-primary" type="button" id="trainer-search-btn"><i class="fas fa-search"></i></button></div><div id="trainer-results" class="mt-4"></div></div>
+                <div class="tab-pane fade p-3" id="trainees-panel" role="tabpanel"><div class="d-flex justify-content-between align-items-center mb-4"><h4 class="m-0">قاعدة بيانات المتدربين</h4><button id="addTraineeBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة متدرب</button></div><div class="input-group search-input-group mb-4"><input type="text" class="form-control" id="trainee-search-input" placeholder="أدخل اسم المتدرب للبحث..."><button class="btn btn-outline-primary" type="button" id="trainee-search-btn"><i class="fas fa-search"></i></button></div><div id="trainee-results" class="mt-4"></div></div>
+                <div class="tab-pane fade p-3" id="trainers-panel" role="tabpanel"><div class="d-flex justify-content-between align-items-center mb-4"><h4 class="m-0">قاعدة بيانات المدربين</h4><button id="addTrainerBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة مدرب</button></div><div class="input-group search-input-group mb-4"><input type="text" class="form-control" id="trainer-search-input" placeholder="أدخل اسم المدرب للبحث..."><button class="btn btn-outline-primary" type="button" id="trainer-search-btn"><i class="fas fa-search"></i></button></div><div id="trainer-results" class="mt-4"></div></div>
                 <div class="tab-pane fade p-3" id="schedule-panel" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="m-0">جدول مواعيد الكورسات</h4>
                         <button id="addScheduleBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة موعد</button>
                     </div>
-                    <div class="input-group mb-4">
+                    <div class="input-group search-input-group mb-4">
                         <input type="text" class="form-control" id="schedule-search-input" placeholder="أدخل اسم الكورس للبحث...">
                         <button class="btn btn-outline-primary" type="button" id="schedule-search-btn"><i class="fas fa-search"></i></button>
                     </div>
@@ -436,7 +467,7 @@
                             <button id="addInventoryItemBtn" class="btn btn-primary"><i class="fas fa-plus me-2"></i>إضافة صنف</button>
                         </div>
                     </div>
-                    <div class="input-group mb-4">
+                    <div class="input-group search-input-group mb-4">
                         <input type="text" class="form-control" id="inventory-search-input" placeholder="أدخل اسم الصنف للبحث...">
                         <button class="btn btn-outline-primary" type="button" id="inventory-search-btn"><i class="fas fa-search"></i></button>
                     </div>
@@ -2434,11 +2465,26 @@
             fetchInventoryData();
             cacheInventoryItems();
 
+            // Setup event listeners
             document.getElementById('trainee-search-btn').addEventListener('click', () => fetchTrainees(document.getElementById('trainee-search-input').value));
             document.getElementById('trainer-search-btn').addEventListener('click', () => fetchTrainers(document.getElementById('trainer-search-input').value));
             document.getElementById('schedule-search-btn').addEventListener('click', () => fetchSchedules(document.getElementById('schedule-search-input').value));
             document.getElementById('inventory-search-btn').addEventListener('click', () => fetchInventoryData(document.getElementById('inventory-search-input').value));
             
+            // Add event listeners for Enter key on search inputs
+            document.getElementById('trainee-search-input').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') document.getElementById('trainee-search-btn').click();
+            });
+            document.getElementById('trainer-search-input').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') document.getElementById('trainer-search-btn').click();
+            });
+            document.getElementById('schedule-search-input').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') document.getElementById('schedule-search-btn').click();
+            });
+            document.getElementById('inventory-search-input').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') document.getElementById('inventory-search-btn').click();
+            });
+
             document.getElementById('addTrainerBtn').addEventListener('click', () => openTrainerModal());
             document.getElementById('addTraineeBtn').addEventListener('click', () => openTraineeModal());
             document.getElementById('addScheduleBtn').addEventListener('click', () => openScheduleModal());
