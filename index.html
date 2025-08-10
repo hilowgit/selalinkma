@@ -342,6 +342,24 @@
             padding: 1rem;
             background-color: #fdfdff;
         }
+        .swal2-select {
+            margin: 1em auto;
+            display: block;
+            width: 80%;
+            padding: .375rem 2.25rem .375rem .75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--bs-body-color);
+            background-color: var(--bs-body-bg);
+            background-image: var(--bs-form-select-bg-icon,url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"));
+            background-repeat: no-repeat;
+            background-position: right .75rem center;
+            background-size: 16px 12px;
+            border: 1px solid var(--bs-border-color);
+            border-radius: .375rem;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -505,8 +523,28 @@
     
     <script>
         // =================================================================================
-        // !! ملاحظة هامة !!
-        // !! يجب إضافة حقل جديد باسم `category` من نوع `text` إلى جدول `courses` في قاعدة بيانات Supabase.
+        // !! تنبيه هام: تغييرات ضرورية في قاعدة البيانات !!
+        // =================================================================================
+        // لتشغيل هذا التحديث، يجب إجراء التغييرات التالية على قاعدة بيانات Supabase:
+        //
+        // 1. إنشاء جدول جديد للتصنيفات:
+        //    - اذهب إلى Supabase > Table Editor > Create a new table.
+        //    - اسم الجدول: `course_categories`
+        //    - الأعمدة:
+        //      - `id` (uuid, اجعله Primary Key)
+        //      - `created_at` (timestamptz)
+        //      - `name` (text, اجعله فريداً Unique)
+        //
+        // 2. تعديل جدول `courses` الحالي:
+        //    - احذف العمود القديم `category` (من نوع text).
+        //    - أضف عموداً جديداً باسم `category_id` (من نوع uuid).
+        //    - اجعل العمود `category_id` مفتاحاً خارجياً (Foreign Key) يشير إلى عمود `id` في جدول `course_categories`.
+        //      - عند إنشاء الـ Foreign Key، في قسم "On delete"، اختر "Restrict" لمنع حذف تصنيف إذا كان مرتبطاً بأي كورس.
+        //
+        // 3. نقل البيانات:
+        //    - قم بإنشاء التصنيفات التي تحتاجها في جدول `course_categories` الجديد.
+        //    - قم بتعديل الكورسات الموجودة في جدول `courses` وربط كل كورس بالتصنيف المناسب عبر عمود `category_id`.
+        //
         // =================================================================================
         const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0';
@@ -593,6 +631,7 @@
         // --- CORE APP LOGIC ---
         // Global Caches & State
         let allCoursesCache = [];
+        let allCategoriesCache = [];
         let allTraineesCache = [];
         let allInventoryItemsCache = [];
         let allTrainersCache = [];
@@ -832,14 +871,13 @@
         }
         
         // =================================================================================
-        // === UPDATED SCHEDULE LOGIC START ===
+        // === SCHEDULE LOGIC ===
         // =================================================================================
         async function fetchSchedules(searchTerm = '') {
             showLoader('schedule-results');
 
-            // 1. Fetch all schedules with course and trainer info
             let schedulesQuery = supabaseClient.from('schedules')
-                .select(`*, courses!inner(id, name, category), trainers(full_name)`)
+                .select(`*, courses!inner(id, name, course_categories(name)), trainers(full_name)`)
                 .order('status', { ascending: true, nullsFirst: false })
                 .order('start_date', { ascending: false });
 
@@ -855,19 +893,16 @@
                 return;
             }
 
-            // 2. Fetch all enrollments to calculate counts
             const { data: enrollments, error: enrollmentsError } = await supabaseClient
                 .from('trainee_enrollments')
                 .select('course_id');
 
             if (enrollmentsError) {
                 console.error('Error fetching enrollments:', enrollmentsError);
-                // Can still display schedules, just without counts
                 displaySchedules(schedules, new Map());
                 return;
             }
 
-            // 3. Create enrollment counts map
             const courseEnrollmentCounts = new Map();
             if (enrollments) {
                 for (const enrollment of enrollments) {
@@ -876,7 +911,6 @@
                 }
             }
 
-            // 4. Call display function
             displaySchedules(schedules, courseEnrollmentCounts);
         }
 
@@ -887,9 +921,8 @@
                 return;
             }
 
-            // Group schedules by category
             const schedulesByCategory = schedules.reduce((acc, schedule) => {
-                const category = schedule.courses.category || 'بدون تصنيف';
+                const category = schedule.courses.course_categories ? schedule.courses.course_categories.name : 'بدون تصنيف';
                 if (!acc[category]) {
                     acc[category] = [];
                 }
@@ -897,7 +930,6 @@
                 return acc;
             }, {});
 
-            // Build accordion HTML
             let accordionHTML = '<div class="accordion" id="scheduleAccordion">';
             let categoryIndex = 0;
 
@@ -956,9 +988,6 @@
             accordionHTML += '</div>';
             container.innerHTML = accordionHTML;
         }
-        // =================================================================================
-        // === UPDATED SCHEDULE LOGIC END ===
-        // =================================================================================
         
         const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
         
@@ -982,7 +1011,6 @@
             form.reset();
             form.querySelector('[name="id"]').value = '';
             
-            // Clear search/select fields
             document.getElementById('selected-schedule-course-display').innerHTML = '';
             document.getElementById('selected-schedule-trainer-display').innerHTML = '';
             document.getElementById('schedule-course-search-input').value = '';
@@ -1009,7 +1037,6 @@
                     }
                 });
 
-                // Set selected course and trainer
                 if (scheduleData.courses) {
                     selectCourseForSchedule(scheduleData.course_id, scheduleData.courses.name);
                 }
@@ -1029,7 +1056,7 @@
                 toggleScheduleFormLock(scheduleData.status === 'completed');
             } else {
                 document.getElementById('scheduleModalTitle').textContent = 'إضافة موعد جديد';
-                toggleScheduleFormLock(false); // Unlock for new entries
+                toggleScheduleFormLock(false);
             }
             
             renderScheduleSelectedTrainees();
@@ -1062,7 +1089,6 @@
             
             if (scheduleError) { console.error(scheduleError); Swal.fire('خطأ!', 'لم يتم حفظ الموعد.', 'error'); return; }
 
-            // Only update enrollments if the course is not completed
             if (savedSchedule.status !== 'completed') {
                 const courseId = savedSchedule.course_id;
                 if (!courseId) {
@@ -1146,9 +1172,9 @@
 
             studentListDiv.innerHTML = enrollments.map(enrollment => {
                 const trainee = enrollment.trainees;
-                if (!trainee) return ''; // Skip if trainee data is missing
+                if (!trainee) return '';
                 const record = attendanceRecords ? attendanceRecords.find(r => r.trainee_id === trainee.id) : null;
-                const status = record ? record.status : 'حاضر'; // Default to present
+                const status = record ? record.status : 'حاضر';
                 return `
                 <div class="d-flex justify-content-between align-items-center border-bottom py-2">
                     <span>${trainee.full_name}</span>
@@ -1214,28 +1240,37 @@
 
             body.innerHTML = `
                 <ul class="list-group list-group-flush">
-                    ${data.map(enrollment => `<li class="list-group-item">${enrollment.trainees.full_name}</li>`).join('')}
+                    ${data.map(enrollment => `
+                        ${enrollment.trainees ? `<li class="list-group-item">${enrollment.trainees.full_name}</li>` : ''}
+                    `).join('')}
                 </ul>
             `;
         }
 
+        // =================================================================================
+        // === SUMMARY & COURSE/CATEGORY MANAGEMENT (UPDATED) ===
+        // =================================================================================
         async function fetchSummaryData() {
             showLoader('summary-content');
             
-            // Fetch all data in parallel
             const [
                 { count: traineeCount },
-                { data: courses },
-                { data: enrollments }
+                { data: courses, error: coursesError },
+                { data: enrollments },
+                { data: categories, error: categoriesError }
             ] = await Promise.all([
                 supabaseClient.from('trainees').select('*', { count: 'exact', head: true }),
-                supabaseClient.from('courses').select('*').order('name'),
-                supabaseClient.from('trainee_enrollments').select('course_id, courses(name)')
+                supabaseClient.from('courses').select('*, course_categories(id, name)').order('name'),
+                supabaseClient.from('trainee_enrollments').select('course_id, courses(name)'),
+                supabaseClient.from('course_categories').select('*').order('name')
             ]);
+
+            if (coursesError) console.error("Error fetching courses", coursesError);
+            if (categoriesError) console.error("Error fetching categories", categoriesError);
             
             allCoursesCache = courses || [];
+            allCategoriesCache = categories || [];
 
-            // Calculate popular courses
             const courseCounts = {};
             if (enrollments) {
                 enrollments.forEach(enrollment => {
@@ -1252,9 +1287,8 @@
             const popularCourses = Object.entries(courseCounts)
                 .map(([id, data]) => ({ id, ...data }))
                 .sort((a, b) => b.count - a.count)
-                .slice(0, 5); // Get top 5
+                .slice(0, 5);
 
-            // Render summary content
             document.getElementById('summary-content').innerHTML = `
                 <div class="row">
                     <div class="col-lg-4 col-md-6 mb-4">
@@ -1287,38 +1321,153 @@
                     </div>
                 </div>
                 <div class="row mt-4">
-                    <div class="col-12">
-                         <div class="card h-100 shadow-sm">
-                              <div class="card-body p-4">
-                                   <h5 class="card-title text-center">إدارة الكورسات</h5>
-                                   <form id="addCourseForm" class="row g-3 mt-3 mb-3 align-items-end">
-                                        <div class="col-sm">
-                                            <label for="newCourseName" class="form-label">اسم الكورس الجديد</label>
-                                            <input type="text" id="newCourseName" name="name" class="form-control" placeholder="مثال: شطرنج" required>
-                                        </div>
-                                        <div class="col-sm">
-                                            <label for="newCourseCategory" class="form-label">تصنيف الكورس</label>
-                                            <input type="text" id="newCourseCategory" name="category" class="form-control" placeholder="مثال: النادي الصيفي" required>
-                                        </div>
-                                        <div class="col-sm-auto">
-                                            <button type="submit" class="btn btn-success w-100">إضافة</button>
-                                        </div>
-                                   </form>
-                                   <ul id="coursesList" class="list-group list-group-flush">
-                                        ${courses && courses.length > 0 ? courses.map(c => `
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <span class="fw-bold">${c.name}</span>
-                                                <small class="d-block text-muted">${c.category || 'بدون تصنيف'}</small>
-                                            </div>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteCourse('${c.id}', '${c.name}')"><i class="fas fa-trash"></i></button>
-                                        </li>`).join('') : '<li class="list-group-item">لا توجد كورسات.</li>'}
-                                   </ul>
-                              </div>
-                         </div>
+                    <div class="col-md-6 mb-4 mb-md-0">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body p-4">
+                                <h5 class="card-title text-center">إدارة التصنيفات</h5>
+                                <form id="addCategoryForm" class="d-flex mt-3 mb-3">
+                                    <input type="text" name="name" class="form-control me-2" placeholder="اسم التصنيف الجديد" required>
+                                    <button type="submit" class="btn btn-success flex-shrink-0">إضافة</button>
+                                </form>
+                                <ul id="categoriesList" class="list-group list-group-flush" style="max-height: 250px; overflow-y: auto;"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body p-4">
+                                <h5 class="card-title text-center">إدارة الكورسات</h5>
+                                <form id="addCourseForm" class="row g-2 mt-3 mb-3 align-items-end">
+                                    <div class="col-sm-6">
+                                        <label for="newCourseName" class="form-label">اسم الكورس</label>
+                                        <input type="text" id="newCourseName" name="name" class="form-control" required>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label for="newCourseCategory" class="form-label">التصنيف</label>
+                                        <select id="newCourseCategory" name="category_id" class="form-select" required></select>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <button type="submit" class="btn btn-primary w-100">إضافة كورس</button>
+                                    </div>
+                                </form>
+                                <hr>
+                                <ul id="coursesList" class="list-group list-group-flush" style="max-height: 250px; overflow-y: auto;"></ul>
+                            </div>
+                        </div>
                     </div>
                 </div>`;
+            
+            renderCategoriesList();
+            renderCoursesList();
+            populateCategorySelect('newCourseCategory');
+            
+            document.getElementById('addCategoryForm').addEventListener('submit', handleAddCategory);
             document.getElementById('addCourseForm').addEventListener('submit', handleAddCourse);
+        }
+
+        function renderCategoriesList() {
+            const list = document.getElementById('categoriesList');
+            if (!list) return;
+            if (allCategoriesCache.length > 0) {
+                list.innerHTML = allCategoriesCache.map(cat => `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${cat.name}</span>
+                        <div>
+                            <button class="btn btn-sm btn-light py-1 px-2" onclick="handleEditCategory('${cat.id}', '${cat.name}')" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
+                            <button class="btn btn-sm btn-light py-1 px-2" onclick="handleDeleteCategory('${cat.id}', '${cat.name}')" title="حذف"><i class="fas fa-trash text-danger"></i></button>
+                        </div>
+                    </li>
+                `).join('');
+            } else {
+                list.innerHTML = '<li class="list-group-item text-muted text-center">لا توجد تصنيفات.</li>';
+            }
+        }
+
+        function renderCoursesList() {
+            const list = document.getElementById('coursesList');
+            if (!list) return;
+            if (allCoursesCache.length > 0) {
+                list.innerHTML = allCoursesCache.map(c => `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-bold">${c.name}</span>
+                            <small class="d-block text-muted">${c.course_categories ? c.course_categories.name : 'بدون تصنيف'}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-light py-1 px-2" onclick="openEditCourseModal('${c.id}', '${c.name}', '${c.course_categories ? c.course_categories.id : ''}')" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
+                            <button class="btn btn-sm btn-light py-1 px-2" onclick="handleDeleteCourse('${c.id}', '${c.name}')" title="حذف"><i class="fas fa-trash text-danger"></i></button>
+                        </div>
+                    </li>
+                `).join('');
+            } else {
+                list.innerHTML = '<li class="list-group-item text-muted text-center">لا توجد كورسات.</li>';
+            }
+        }
+
+        function populateCategorySelect(selectId, selectedId = null) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            select.innerHTML = '<option value="" disabled selected>اختر تصنيف...</option>';
+            allCategoriesCache.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                if (cat.id === selectedId) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+
+        async function handleAddCategory(event) {
+            event.preventDefault();
+            const form = event.target;
+            const categoryName = new FormData(form).get('name').trim();
+            if (!categoryName) return;
+
+            const { error } = await supabaseClient.from('course_categories').insert([{ name: categoryName }]);
+            if (error) {
+                Swal.fire('خطأ!', `لم تتم الإضافة: ${error.message}`, 'error');
+            } else {
+                Swal.fire('تم!', 'تمت إضافة التصنيف بنجاح.', 'success');
+                form.reset();
+                fetchSummaryData();
+            }
+        }
+
+        async function handleEditCategory(id, currentName) {
+            const { value: newName } = await Swal.fire({
+                title: 'تعديل اسم التصنيف',
+                input: 'text',
+                inputValue: currentName,
+                showCancelButton: true,
+                confirmButtonText: 'حفظ',
+                cancelButtonText: 'إلغاء',
+                inputValidator: (value) => !value && 'يجب إدخال اسم للتصنيف!'
+            });
+
+            if (newName && newName.trim() !== currentName) {
+                const { error } = await supabaseClient.from('course_categories').update({ name: newName.trim() }).eq('id', id);
+                if (error) {
+                    Swal.fire('خطأ!', `لم يتم التحديث: ${error.message}`, 'error');
+                } else {
+                    Swal.fire('تم!', 'تم تحديث التصنيف بنجاح.', 'success');
+                    fetchSummaryData();
+                    fetchSchedules(); 
+                }
+            }
+        }
+
+        async function handleDeleteCategory(id, name) {
+            confirmDeletion(async () => {
+                const { error } = await supabaseClient.from('course_categories').delete().eq('id', id);
+                if (error) {
+                    Swal.fire('خطأ!', 'لم يتم الحذف. تأكد من عدم وجود كورسات مرتبطة بهذا التصنيف أولاً.', 'error');
+                } else {
+                    Swal.fire('تم الحذف!', `تم حذف تصنيف ${name}.`, 'success');
+                    fetchSummaryData();
+                }
+            }, `هل أنت متأكد من حذف تصنيف "${name}"؟`);
         }
 
         async function handleAddCourse(event) {
@@ -1326,25 +1475,69 @@
             const form = event.target;
             const formData = new FormData(form);
             const courseName = formData.get('name');
-            const courseCategory = formData.get('category');
-            const { error } = await supabaseClient.from('courses').insert([{ name: courseName, category: courseCategory }]);
-            if (error) Swal.fire('خطأ!', `لم تتم الإضافة: ${error.message}`, 'error');
-            else { 
-                Swal.fire('تم!', 'تمت إضافة الكورس بنجاح.', 'success'); 
-                form.reset(); 
-                fetchSummaryData(); 
-                fetchSchedules(); // Refresh schedule tab as well
+            const categoryId = formData.get('category_id');
+
+            if (!categoryId) {
+                Swal.fire('تنبيه', 'الرجاء اختيار تصنيف للكورس.', 'warning');
+                return;
+            }
+
+            const { error } = await supabaseClient.from('courses').insert([{ name: courseName, category_id: categoryId }]);
+            if (error) {
+                Swal.fire('خطأ!', `لم تتم الإضافة: ${error.message}`, 'error');
+            } else {
+                Swal.fire('تم!', 'تمت إضافة الكورس بنجاح.', 'success');
+                form.reset();
+                fetchSummaryData();
             }
         }
         
+        async function openEditCourseModal(courseId, currentName, currentCategoryId) {
+            const categoryOptions = allCategoriesCache.map(cat => 
+                `<option value="${cat.id}" ${cat.id === currentCategoryId ? 'selected' : ''}>${cat.name}</option>`
+            ).join('');
+
+            const { value: formValues } = await Swal.fire({
+                title: 'تعديل الكورس',
+                html:
+                    `<input id="swal-course-name" class="swal2-input" placeholder="اسم الكورس" value="${currentName}">` +
+                    `<select id="swal-course-category" class="swal2-select">${categoryOptions}</select>`,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'حفظ',
+                cancelButtonText: 'إلغاء',
+                preConfirm: () => {
+                    return {
+                        name: document.getElementById('swal-course-name').value,
+                        category_id: document.getElementById('swal-course-category').value
+                    }
+                }
+            });
+
+            if (formValues) {
+                if (!formValues.name || !formValues.category_id) {
+                    Swal.fire('خطأ', 'يجب إدخال اسم واختيار تصنيف.', 'error');
+                    return;
+                }
+                const { error } = await supabaseClient.from('courses').update(formValues).eq('id', courseId);
+                if (error) {
+                    Swal.fire('خطأ!', `لم يتم التحديث: ${error.message}`, 'error');
+                } else {
+                    Swal.fire('تم!', 'تم تحديث الكورس بنجاح.', 'success');
+                    fetchSummaryData();
+                    fetchSchedules();
+                }
+            }
+        }
+
         function handleDeleteCourse(id, name) {
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('courses').delete().eq('id', id);
-                if (error) Swal.fire('خطأ!', 'لم يتم الحذف، قد يكون الكورس مرتبطاً بجدول.', 'error');
-                else { 
-                    Swal.fire('تم الحذف!', `تم حذف كورس ${name}.`, 'success'); 
-                    fetchSummaryData(); 
-                    fetchSchedules(); // Refresh schedule tab as well
+                if (error) {
+                    Swal.fire('خطأ!', 'لم يتم الحذف، قد يكون الكورس مرتبطاً بجدول أو بطلاب.', 'error');
+                } else {
+                    Swal.fire('تم الحذف!', `تم حذف كورس ${name}.`, 'success');
+                    fetchSummaryData();
                 }
             }, `هل أنت متأكد من حذف كورس "${name}"؟`);
         }
@@ -1425,7 +1618,6 @@
             document.getElementById('schedule-course-search-input').value = '';
             document.getElementById('schedule-course-search-results').classList.add('d-none');
             
-            // Auto-load enrolled trainees for the selected course
             const courseId = id;
             scheduleSelectedTrainees.clear(); 
             if (courseId) {
@@ -1518,14 +1710,12 @@
             const startDate = `${year}-${monthStr}-01`;
             const endDate = `${year}-${monthStr}-${lastDay}`;
 
-            // Fetch courses
             const { data: schedules, error: scheduleError } = await supabaseClient
                 .from('schedules')
                 .select('start_date, end_date, courses(name)')
                 .gte('start_date', startDate)
                 .lte('start_date', endDate);
 
-            // Fetch appointments
             const { data: appointments, error: appointmentError } = await supabaseClient
                 .from('appointments')
                 .select('title, appointment_date')
@@ -1915,8 +2105,8 @@
                     Swal.fire('خطأ!', 'لم يتم حذف الحركة.', 'error');
                 } else {
                     Swal.fire('تم!', 'تم حذف الحركة بنجاح.', 'success');
-                    openInventoryDetailModal(itemId, itemName); // Refresh detail modal
-                    fetchInventoryData(); // Refresh main inventory table
+                    openInventoryDetailModal(itemId, itemName);
+                    fetchInventoryData();
                 }
             }, 'هل أنت متأكد من حذف هذه الحركة؟ هذا الإجراء لا يمكن التراجع عنه.');
         }
@@ -2052,7 +2242,7 @@
             const sortedDates = Array.from(reportData.dates).sort();
 
             body.innerHTML = generateAttendanceReportHTML(reportData, sortedDates, scheduleId);
-            initializeTooltips(); // Re-initialize tooltips for the new delete buttons
+            initializeTooltips();
 
             const saveBtn = document.getElementById('saveAttendanceReportBtn');
             const newSaveBtn = saveBtn.cloneNode(true);
@@ -2080,13 +2270,12 @@
                 nextStatus = 'متأخر';
             } else if (currentStatus === 'متأخر') {
                 nextStatus = 'غائب';
-            } else { // غائب
+            } else {
                 nextStatus = 'حاضر';
             }
 
             const statusInfo = getStatusInfo(nextStatus);
 
-            // Update element appearance and data
             element.dataset.status = nextStatus;
             element.textContent = statusInfo.text;
             element.className = `attendance-status-badge ${statusInfo.className}`;
@@ -2127,7 +2316,7 @@
                 const student = reportData.students[studentId];
                 tableHTML += `<tr><td class="student-name">${student.name}</td>`;
                 dates.forEach(date => {
-                    const status = student.attendance[date] || 'غائب'; // Default to absent
+                    const status = student.attendance[date] || 'غائب';
                     const statusInfo = getStatusInfo(status);
                     tableHTML += `
                         <td>
@@ -2172,7 +2361,6 @@
                 Swal.fire('تم الحذف!', `تم حذف جميع سجلات يوم ${date} بنجاح.`, 'success');
                 const modalElement = document.getElementById('attendanceReportModal');
                 const courseName = modalElement.dataset.courseName;
-                // Refresh the modal content
                 openAttendanceReportModal(scheduleId, courseName);
             }
         }
@@ -2210,13 +2398,10 @@
 
         // --- APP INITIALIZATION ---
         function initializeApp() {
-            // Initialize Modals
             transactionModalInstance = new bootstrap.Modal(document.getElementById('inventoryTransactionModal'));
             detailModalInstance = new bootstrap.Modal(document.getElementById('inventoryDetailModal'));
             attendanceReportModal = new bootstrap.Modal(document.getElementById('attendanceReportModal'));
 
-
-            // Fetch initial data
             fetchSummaryData();
             fetchTrainees();
             fetchTrainers();
@@ -2228,7 +2413,6 @@
             fetchInventoryData();
             cacheInventoryItems();
 
-            // Setup event listeners
             document.getElementById('trainee-search-btn').addEventListener('click', () => fetchTrainees(document.getElementById('trainee-search-input').value));
             document.getElementById('trainer-search-btn').addEventListener('click', () => fetchTrainers(document.getElementById('trainer-search-input').value));
             document.getElementById('schedule-search-btn').addEventListener('click', () => fetchSchedules(document.getElementById('schedule-search-input').value));
@@ -2266,22 +2450,19 @@
                 renderCalendar();
             });
             
-            // Add listener for the new attendance tab
             document.getElementById('attendance-tab').addEventListener('shown.bs.tab', fetchCoursesForAttendance);
 
-            // Modal chaining logic
             const transactionModalEl = document.getElementById('inventoryTransactionModal');
             transactionModalEl.addEventListener('hidden.bs.modal', () => {
                 if (!transactionModalEl._transactionWasSaved && lastOpenedDetail.itemId) {
                     detailModalInstance.show();
                 }
-                transactionModalEl._transactionWasSaved = false; // Reset flag
+                transactionModalEl._transactionWasSaved = false;
             });
 
         }
         
         function initializeTooltips() {
-            // First, dispose of any existing tooltips to avoid duplicates
             const existingTooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
             existingTooltips.forEach(el => {
                 const tooltip = bootstrap.Tooltip.getInstance(el);
@@ -2289,7 +2470,6 @@
                     tooltip.dispose();
                 }
             });
-            // Now, initialize new ones
             const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
             [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
         }
