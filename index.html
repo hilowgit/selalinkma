@@ -310,7 +310,7 @@
             <input type="hidden" name="trainer_id" required>
         </div>
         <div class="col-md-6"><label class="form-label">اسم القاعة</label><input type="text" name="hall_name" class="form-control"></div>
-        <div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">عدد المتدربين</label><input type="number" name="trainee_count" class="form-control" min="0" step="1"></div>
     </div>
     <h6 class="form-section-title">التوقيت والحالة</h6>
     <div class="row g-3">
@@ -356,7 +356,7 @@
             <div id="selected-inventory-item-display" class="mt-2"></div>
             <input type="hidden" name="item_id" required>
         </div>
-        <div class="mb-3"><label class="form-label">نوع الحركة</label><select name="transaction_type" class="form-select" required><option value="in">داخل (شراء)</option><option value="out">خارج (صرف)</option></select></div><div class="mb-3"><label class="form-label">الكمية</label><input type="number" name="quantity" class="form-control" required min="1"></div><div class="mb-3"><label class="form-label">التاريخ</label><input type="date" name="transaction_date" class="form-control" required></div><div class="mb-3"><label class="form-label">البيان (اختياري)</label><input type="text" name="description" class="form-control"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الحركة</button></div></form></div></div></div>
+        <div class="mb-3"><label class="form-label">نوع الحركة</label><select name="transaction_type" class="form-select" required><option value="in">داخل (شراء)</option><option value="out">خارج (صرف)</option></select></div><div class="mb-3"><label class="form-label">الكمية</label><input type="number" name="quantity" class="form-control" required min="1" step="1"></div><div class="mb-3"><label class="form-label">التاريخ</label><input type="date" name="transaction_date" class="form-control" required></div><div class="mb-3"><label class="form-label">البيان (اختياري)</label><input type="text" name="description" class="form-control"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ الحركة</button></div></form></div></div></div>
     <div class="modal fade" id="inventoryDetailModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="inventoryDetailModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="inventoryDetailModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
     <div class="modal fade" id="courseDetailModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="courseDetailModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="courseDetailModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
     <div class="modal fade" id="attendanceReportModal" tabindex="-1"><div class="modal-dialog modal-fullscreen"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="attendanceReportModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="attendanceReportModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="button" id="saveAttendanceReportBtn" class="btn btn-primary">حفظ التعديلات</button></div></div></div></div>
@@ -573,7 +573,7 @@
 
         function displayTrainees(trainees) {
             const container = document.getElementById('trainee-results');
-            if (!trainees || trainees.length === 0) {
+            if (!trainers || trainees.length === 0) {
                 container.innerHTML = `<div class="alert alert-info">لا يوجد متدربين.</div>`; return;
             }
             container.innerHTML = trainees.map(trainee => {
@@ -1174,11 +1174,11 @@
                                     </div>
                                     <div class="col-sm-6">
                                         <label for="newCoursePrice" class="form-label">السعر للطالب</label>
-                                        <input type="number" id="newCoursePrice" name="price_per_student" class="form-control" required min="0" value="0">
+                                        <input type="number" id="newCoursePrice" name="price_per_student" class="form-control" required min="0" step="any" value="0">
                                     </div>
                                     <div class="col-sm-6">
                                         <label for="newCoursePercentage" class="form-label">نسبة المدرب (%)</label>
-                                        <input type="number" id="newCoursePercentage" name="trainer_percentage" class="form-control" required min="0" max="100" value="0">
+                                        <input type="number" id="newCoursePercentage" name="trainer_percentage" class="form-control" required min="0" max="100" step="1" value="0">
                                     </div>
                                     <div class="col-12 mt-3">
                                         <button type="submit" class="btn btn-primary w-100">إضافة كورس</button>
@@ -1338,8 +1338,8 @@
                 html:
                     `<input id="swal-course-name" class="swal2-input" placeholder="اسم الكورس" value="${course.name}">` +
                     `<select id="swal-course-category" class="swal2-select">${categoryOptions}</select>` +
-                    `<input id="swal-course-price" type="number" class="swal2-input" placeholder="السعر" value="${course.price_per_student || 0}">` +
-                    `<input id="swal-course-percentage" type="number" class="swal2-input" placeholder="نسبة المدرب %" value="${course.trainer_percentage || 0}">`,
+                    `<input id="swal-course-price" type="number" step="any" class="swal2-input" placeholder="السعر" value="${course.price_per_student || 0}">` +
+                    `<input id="swal-course-percentage" type="number" step="1" class="swal2-input" placeholder="نسبة المدرب %" value="${course.trainer_percentage || 0}">`,
                 focusConfirm: false,
                 showCancelButton: true,
                 confirmButtonText: 'حفظ',
