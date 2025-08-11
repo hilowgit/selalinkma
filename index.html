@@ -477,7 +477,6 @@
         </main>
     </div>
 
-    <!-- Modals: No changes needed in the modal structure itself -->
     <div class="modal fade" id="traineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="traineeForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="traineeModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">البيانات الشخصية</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div></div><h6 class="form-section-title">الملاحظات</h6><div class="col-12"><label class="form-label" for="trainee-notes">ملاحظات إدارية</label><textarea id="trainee-notes" name="notes" class="form-control" rows="3" placeholder="...أضف ملاحظات حول المتدرب هنا"></textarea></div><h6 class="form-section-title">تسجيل الكورسات</h6><div class="position-relative"><label class="form-label">ابحث عن كورس لإضافته</label><input type="text" id="course-search-input" class="form-control" placeholder="...ابدأ بكتابة اسم الكورس"><div id="course-search-results-dropdown" class="search-results-dropdown d-none"></div></div><div id="selected-courses-list" class="mt-2"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
     <div class="modal fade" id="trainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="trainerForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="trainerModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">البيانات الشخصية</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" name="specialty" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" name="cv_file" class="form-control" accept=".pdf"><small id="currentCv" class="form-text text-primary"></small></div></div><h6 class="form-section-title">بيانات التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" name="contract_start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" name="contract_end_date" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
     <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
@@ -554,11 +553,17 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
-        // This script remains the same for now. 
-        // The HTML changes prepare for the JavaScript refactoring described in the plan.
-        
+        // =================================================================================
+        // !! تنبيه هام: تأكد من تحديث قاعدة البيانات !!
+        // =================================================================================
+        // إذا لم تكن قد قمت بذلك بالفعل، يجب تنفيذ التغييرات التالية على قاعدة بيانات Supabase:
+        // 1. إنشاء جدول `course_categories` (بأعمدة id, created_at, name).
+        // 2. تعديل جدول `courses`: حذف عمود `category` النصي، وإضافة عمود `category_id` (uuid)،
+        //    وربطه كـ Foreign Key بجدول `course_categories`.
+        // =================================================================================
         const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0';
+        // =================================================================================
         
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
@@ -652,7 +657,7 @@
         let transactionModalInstance;
         let detailModalInstance;
         let attendanceReportModal;
-        let currentScheduleCourse = null;
+        let currentScheduleCourse = null; // Holds the selected course object in the schedule modal
 
 
         async function fetchTrainers(searchTerm = '') {
@@ -672,8 +677,8 @@
             container.innerHTML = trainers.map(trainer => `
                 <div class="result-card mb-3">
                     <div class="card-actions">
-                        <button class="btn btn-sm btn-outline-primary" data-action="edit-trainer" data-id="${trainer.id}" title="تعديل"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" data-action="delete-trainer" data-id="${trainer.id}" data-name="${trainer.full_name}" title="حذف"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="openTrainerModal(true, '${trainer.id}')" title="تعديل"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteTrainer('${trainer.id}', '${trainer.full_name}')" title="حذف"><i class="fas fa-trash"></i></button>
                     </div>
                     <h5><i class="fas fa-user-tie me-2"></i>${trainer.full_name}</h5>
                     <p class="mb-1"><i class="fas fa-phone-alt me-2 text-muted"></i>${trainer.phone || 'N/A'}</p>
@@ -767,8 +772,8 @@
                 return `
                 <div class="result-card mb-3">
                      <div class="card-actions">
-                        <button class="btn btn-sm btn-outline-primary" data-action="edit-trainee" data-id="${trainee.id}"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" data-action="delete-trainee" data-id="${trainee.id}" data-name="${trainee.full_name}"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="openTraineeModal(true, '${trainee.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="handleDeleteTrainee('${trainee.id}', '${trainee.full_name}')"><i class="fas fa-trash"></i></button>
                     </div>
                     <h5><i class="fas fa-user-graduate me-2"></i>${trainee.full_name}</h5>
                     <p class="mb-1"><i class="fas fa-phone-alt me-2 text-muted"></i>${trainee.phone || 'N/A'}</p>
@@ -815,7 +820,7 @@
             const filtered = availableCourses.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
             
             if(filtered.length > 0) {
-                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(c => `<li class="list-group-item" data-action="select-course" data-id="${c.id}" data-name="${c.name}">${c.name}</li>`).join('')}</ul>`;
+                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(c => `<li class="list-group-item" onclick="selectCourse('${c.id}', '${c.name}')">${c.name}</li>`).join('')}</ul>`;
                 resultsContainer.classList.remove('d-none');
             } else {
                 resultsContainer.classList.add('d-none');
@@ -839,7 +844,7 @@
             listContainer.innerHTML = '';
             if (selectedCourses.size > 0) {
                 for (const [id, name] of selectedCourses.entries()) {
-                    listContainer.innerHTML += `<div class="selected-tag" data-id="${id}">${name}<button type="button" data-action="remove-course" data-id="${id}">&times;</button></div>`;
+                    listContainer.innerHTML += `<div class="selected-tag" data-id="${id}">${name}<button type="button" onclick="removeCourse('${id}')">&times;</button></div>`;
                 }
             }
         }
@@ -970,9 +975,9 @@
                                     <p class="mb-0 text-muted small"><i class="far fa-clock me-2"></i>${schedule.start_date || '?'} - ${schedule.end_date || '?'}</p>
                                 </div>
                                 <div class="d-flex flex-column gap-2 flex-shrink-0">
-                                    <button class="btn btn-sm btn-success" data-action="open-attendance" data-id="${schedule.id}" data-name="${schedule.courses.name}" title="أخذ التفقد"><i class="fas fa-user-check"></i></button>
-                                    <button class="btn btn-sm btn-primary" data-action="edit-schedule" data-id="${schedule.id}" title="تعديل الموعد"><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-sm btn-danger" data-action="delete-schedule" data-id="${schedule.id}" data-name="${schedule.courses ? schedule.courses.name : ''}" title="حذف الموعد"><i class="fas fa-trash"></i></button>
+                                    <button class="btn btn-sm btn-success" onclick="openAttendanceModal('${schedule.id}', '${schedule.courses.name}')" title="أخذ التفقد"><i class="fas fa-user-check"></i></button>
+                                    <button class="btn btn-sm btn-primary" onclick="openScheduleModal(true, '${schedule.id}')" title="تعديل الموعد"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-danger" onclick="handleDeleteSchedule('${schedule.id}', '${schedule.courses ? schedule.courses.name : ''}')" title="حذف الموعد"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -1320,7 +1325,7 @@
                                     ${popularCourses.length > 0 ? `
                                         <ul class="list-group list-group-flush">
                                             ${popularCourses.map(course => `
-                                                <li class="list-group-item d-flex justify-content-between align-items-center clickable" data-action="show-course-details" data-id="${course.id}" data-name="${course.name}">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center clickable" onclick="openCourseDetailModal('${course.id}', '${course.name}')">
                                                     ${course.name}
                                                     <span class="badge bg-primary rounded-pill">${course.count}</span>
                                                 </li>
@@ -1385,8 +1390,8 @@
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <span>${cat.name}</span>
                         <div>
-                            <button class="btn btn-sm btn-light py-1 px-2" data-action="edit-category" data-id="${cat.id}" data-name="${cat.name}" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
-                            <button class="btn btn-sm btn-light py-1 px-2" data-action="delete-category" data-id="${cat.id}" data-name="${cat.name}" title="حذف"><i class="fas fa-trash text-danger"></i></button>
+                            <button class="btn btn-sm btn-light py-1 px-2" onclick="handleEditCategory('${cat.id}', '${cat.name}')" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
+                            <button class="btn btn-sm btn-light py-1 px-2" onclick="handleDeleteCategory('${cat.id}', '${cat.name}')" title="حذف"><i class="fas fa-trash text-danger"></i></button>
                         </div>
                     </li>
                 `).join('');
@@ -1406,8 +1411,8 @@
                             <small class="d-block text-muted">${c.course_categories ? c.course_categories.name : 'بدون تصنيف'}</small>
                         </div>
                         <div>
-                            <button class="btn btn-sm btn-light py-1 px-2" data-action="edit-course" data-id="${c.id}" data-name="${c.name}" data-category-id="${c.category_id || ''}" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
-                            <button class="btn btn-sm btn-light py-1 px-2" data-action="delete-course" data-id="${c.id}" data-name="${c.name}" title="حذف"><i class="fas fa-trash text-danger"></i></button>
+                            <button class="btn btn-sm btn-light py-1 px-2" onclick="openEditCourseModal('${c.id}', '${c.name}', '${c.category_id || ''}')" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
+                            <button class="btn btn-sm btn-light py-1 px-2" onclick="handleDeleteCourse('${c.id}', '${c.name}')" title="حذف"><i class="fas fa-trash text-danger"></i></button>
                         </div>
                     </li>
                 `).join('');
@@ -1577,7 +1582,7 @@
             
             if(filtered.length > 0) {
                 resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(item => `
-                    <li class="list-group-item" data-action="select-schedule-course" data-id="${item.id}">
+                    <li class="list-group-item" onclick="selectCourseForSchedule('${item.id}')">
                         ${item.name} 
                         <small class="text-muted d-block">${item.course_categories ? item.course_categories.name : 'N/A'}</small>
                     </li>`).join('')}</ul>`;
@@ -1603,7 +1608,7 @@
                         <span class="fw-bold text-primary">${course.name}</span>
                         <small class="d-block text-muted">${categoryName}</small>
                     </div>
-                    <button type="button" class="btn btn-sm btn-light py-0 px-2 ms-2" data-action="edit-course-from-schedule" title="تعديل بيانات الكورس">
+                    <button type="button" class="btn btn-sm btn-light py-0 px-2 ms-2" onclick="editCourseFromScheduleModal()" title="تعديل بيانات الكورس">
                         <i class="fas fa-edit text-primary"></i>
                     </button>
                 </div>
@@ -1652,7 +1657,7 @@
             const filtered = availableTrainees.filter(t => t.full_name.toLowerCase().includes(searchTerm.toLowerCase()));
             
             if(filtered.length > 0) {
-                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(t => `<li class="list-group-item" data-action="select-trainee-for-schedule" data-id="${t.id}" data-name="${t.full_name}">${t.full_name}</li>`).join('')}</ul>`;
+                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(t => `<li class="list-group-item" onclick="selectTraineeForSchedule('${t.id}', '${t.full_name}')">${t.full_name}</li>`).join('')}</ul>`;
                 resultsContainer.classList.remove('d-none');
             } else {
                 resultsContainer.classList.add('d-none');
@@ -1679,7 +1684,7 @@
             }
             listContainer.innerHTML = '';
             for (const [id, name] of scheduleSelectedTrainees.entries()) {
-                listContainer.innerHTML += `<div class="selected-tag" data-id="${id}">${name}<button type="button" data-action="remove-trainee-from-schedule" data-id="${id}">&times;</button></div>`;
+                listContainer.innerHTML += `<div class="selected-tag" data-id="${id}">${name}<button type="button" onclick="removeTraineeFromSchedule('${id}')">&times;</button></div>`;
             }
         }
         
@@ -1692,7 +1697,7 @@
             const filtered = allTrainersCache.filter(item => item.full_name.toLowerCase().includes(searchTerm.toLowerCase()));
             
             if(filtered.length > 0) {
-                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(item => `<li class="list-group-item" data-action="select-trainer-for-schedule" data-id="${item.id}" data-name="${item.full_name}">${item.full_name}</li>`).join('')}</ul>`;
+                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(item => `<li class="list-group-item" onclick="selectTrainerForSchedule('${item.id}', '${item.full_name}')">${item.full_name}</li>`).join('')}</ul>`;
                 resultsContainer.classList.remove('d-none');
             } else {
                 resultsContainer.classList.add('d-none');
@@ -1824,8 +1829,8 @@
                                     <p class="mb-0 small text-muted">${apt.description || ''}</p>
                                 </div>
                                 <div>
-                                    <button type="button" class="btn btn-sm btn-outline-primary me-2" data-action="edit-appointment" data-id="${apt.id}"><i class="fas fa-edit"></i></button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete-appointment" data-id="${apt.id}" data-date="${dateString}"><i class="fas fa-trash"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="editAppointment('${apt.id}')"><i class="fas fa-edit"></i></button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="handleDeleteAppointment('${apt.id}', '${dateString}')"><i class="fas fa-trash"></i></button>
                                 </div>
                             </li>
                         `).join('')}
@@ -1962,15 +1967,15 @@
                                 <td>${item.totalIn}</td>
                                 <td>${item.totalOut}</td>
                                 <td class="fw-bold ${getBalanceClass(item.balance)}">${item.balance}</td>
-                                <td class="actions-cell text-start">
+                                <td class="actions-cell text-start" onclick="event.stopPropagation();">
                                     <div id="actions-view-${item.id}" class="btn-group">
-                                        <button class="btn btn-sm btn-light" data-action="view-inventory-details" data-id="${item.id}" data-name="${item.name}" title="عرض التفاصيل"><i class="fas fa-list-ul text-info"></i></button>
-                                        <button class="btn btn-sm btn-light" data-action="edit-inventory-item-name" data-id="${item.id}" title="تعديل الاسم"><i class="fas fa-edit text-primary"></i></button>
-                                        <button class="btn btn-sm btn-light" data-action="delete-inventory-item" data-id="${item.id}" data-name="${item.name}" title="حذف الصنف"><i class="fas fa-trash text-danger"></i></button>
+                                        <button class="btn btn-sm btn-light" onclick="openInventoryDetailModal('${item.id}', '${item.name}')" title="عرض التفاصيل" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-list-ul text-info"></i></button>
+                                        <button class="btn btn-sm btn-light" onclick="toggleItemEditMode('${item.id}', true)" title="تعديل الاسم" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-edit text-primary"></i></button>
+                                        <button class="btn btn-sm btn-light" onclick="handleDeleteInventoryItem('${item.id}', '${item.name}')" title="حذف الصنف" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-trash text-danger"></i></button>
                                     </div>
                                     <div id="actions-edit-${item.id}" class="d-none btn-group">
-                                        <button class="btn btn-sm btn-light" data-action="save-inventory-item-name" data-id="${item.id}" title="حفظ"><i class="fas fa-check text-success"></i></button>
-                                        <button class="btn btn-sm btn-light" data-action="cancel-edit-inventory-item-name" data-id="${item.id}" title="إلغاء"><i class="fas fa-times text-secondary"></i></button>
+                                        <button class="btn btn-sm btn-light" onclick="handleUpdateInventoryItem('${item.id}')" title="حفظ"><i class="fas fa-check text-success"></i></button>
+                                        <button class="btn btn-sm btn-light" onclick="toggleItemEditMode('${item.id}', false)" title="إلغاء"><i class="fas fa-times text-secondary"></i></button>
                                     </div>
                                 </td>
                             </tr>
@@ -2134,8 +2139,8 @@
                                 <td class="fw-bold">${t.quantity}</td>
                                 <td class="text-muted">${t.description || '-'}</td>
                                 <td class="text-end">
-                                    <button class="btn btn-sm btn-light" data-action="edit-inventory-transaction" data-id="${t.id}" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
-                                    <button class="btn btn-sm btn-light" data-action="delete-inventory-transaction" data-id="${t.id}" data-item-id="${itemId}" data-item-name="${itemName}" title="حذف"><i class="fas fa-trash text-danger"></i></button>
+                                    <button class="btn btn-sm btn-light" onclick="openTransactionModal('${t.id}')" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
+                                    <button class="btn btn-sm btn-light" onclick="handleDeleteInventoryTransaction('${t.id}', '${itemId}', '${itemName}')" title="حذف"><i class="fas fa-trash text-danger"></i></button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -2197,7 +2202,7 @@
             const filtered = allInventoryItemsCache.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
             
             if(filtered.length > 0) {
-                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(item => `<li class="list-group-item" data-action="select-inventory-item" data-id="${item.id}" data-name="${item.name}">${item.name}</li>`).join('')}</ul>`;
+                resultsContainer.innerHTML = `<ul class="list-group">${filtered.map(item => `<li class="list-group-item" onclick="selectInventoryItem('${item.id}', '${item.name}')">${item.name}</li>`).join('')}</ul>`;
                 resultsContainer.classList.remove('d-none');
             } else {
                 resultsContainer.classList.add('d-none');
@@ -2235,7 +2240,7 @@
             }
             container.innerHTML = schedules.map(schedule => `
                 <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="result-card clickable h-100" data-action="open-attendance-report" data-id="${schedule.id}" data-name="${schedule.courses.name}">
+                    <div class="result-card clickable h-100" onclick="openAttendanceReportModal('${schedule.id}', '${schedule.courses.name}')">
                         <h5><i class="fas fa-book-reader me-2"></i>${schedule.courses.name}</h5>
                         <p class="mb-0 text-muted small"><i class="far fa-clock me-2"></i>${schedule.start_date} إلى ${schedule.end_date}</p>
                     </div>
@@ -2345,9 +2350,7 @@
                                             <span>${date}</span>
                                             <button 
                                                 class="btn btn-outline-danger delete-date-btn" 
-                                                data-action="delete-attendance-date"
-                                                data-schedule-id="${scheduleId}"
-                                                data-date="${date}"
+                                                onclick="confirmDeleteAttendanceDate('${scheduleId}', '${date}')"
                                                 title="حذف هذا اليوم"
                                                 data-bs-toggle="tooltip"
                                                 data-bs-placement="top">
@@ -2374,7 +2377,7 @@
                                 data-trainee-id="${studentId}" 
                                 data-date="${date}"
                                 data-status="${status}"
-                                data-action="cycle-attendance-status">
+                                onclick="cycleAttendanceStatus(this)">
                                 ${statusInfo.text}
                             </span>
                         </td>
