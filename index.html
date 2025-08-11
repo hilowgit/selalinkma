@@ -186,15 +186,15 @@
         }
 
         /* --- Other Styles --- */
-        .swal2-select {
-            margin: 1em auto; display: block; width: 80%;
-            padding: .375rem 2.25rem .375rem .75rem;
-            font-size: 1rem; font-weight: 400; line-height: 1.5;
-            color: var(--bs-body-color); background-color: var(--bs-body-bg);
-            background-image: var(--bs-form-select-bg-icon,url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"));
-            background-repeat: no-repeat; background-position: right .75rem center;
-            background-size: 16px 12px; border: 1px solid var(--bs-border-color);
-            border-radius: .375rem;
+        .swal2-select, .swal2-input {
+            margin: 0.5em auto !important;
+        }
+        .swal2-label {
+            display: block;
+            text-align: right;
+            margin: 0.5em 0 0.2em;
+            font-size: 1em;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -1336,10 +1336,19 @@
             const { value: formValues } = await Swal.fire({
                 title: 'تعديل الكورس',
                 html:
-                    `<input id="swal-course-name" class="swal2-input" placeholder="اسم الكورس" value="${course.name}">` +
+                    `<div style="text-align: right; padding: 0 1em;">` +
+                    `<label for="swal-course-name" class="swal2-label">اسم الكورس</label>` +
+                    `<input id="swal-course-name" class="swal2-input" value="${course.name}">` +
+                    
+                    `<label for="swal-course-category" class="swal2-label">التصنيف</label>` +
                     `<select id="swal-course-category" class="swal2-select">${categoryOptions}</select>` +
-                    `<input id="swal-course-price" type="number" step="any" class="swal2-input" placeholder="السعر" value="${course.price_per_student || 0}">` +
-                    `<input id="swal-course-percentage" type="number" step="1" class="swal2-input" placeholder="نسبة المدرب %" value="${course.trainer_percentage || 0}">`,
+                    
+                    `<label for="swal-course-price" class="swal2-label">السعر للطالب</label>` +
+                    `<input id="swal-course-price" type="number" step="any" class="swal2-input" value="${course.price_per_student || 0}">` +
+                    
+                    `<label for="swal-course-percentage" class="swal2-label">نسبة المدرب (%)</label>` +
+                    `<input id="swal-course-percentage" type="number" step="1" class="swal2-input" value="${course.trainer_percentage || 0}">` +
+                    `</div>`,
                 focusConfirm: false,
                 showCancelButton: true,
                 confirmButtonText: 'حفظ',
