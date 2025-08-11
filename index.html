@@ -29,6 +29,9 @@
             --appointment-color: #10B981;
             --success-color: #10B981;
             --warning-color: #F59E0B;
+            --financial-green: #10B981;
+            --financial-red: #EF4444;
+            --financial-blue: #3B82F6;
         }
         body {
             font-family: 'Tajawal', sans-serif;
@@ -79,7 +82,7 @@
         .search-results-dropdown {
             position: absolute; background: white; border: 1px solid var(--border-color);
             border-radius: 0.5rem; max-height: 200px; overflow-y: auto;
-            width: 100%; z-index: 1060; /* Higher z-index for search dropdowns */
+            width: 100%; z-index: 1060;
         }
         .search-results-dropdown .list-group-item { cursor: pointer; }
         .search-results-dropdown .list-group-item:hover { background-color: var(--light-primary); }
@@ -108,265 +111,12 @@
             cursor: not-allowed;
         }
 
-        /* --- Calendar Styles --- */
-        #calendar-container {
-            background-color: #fff;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-        #calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        #calendar-header h3 {
-            margin: 0;
-            font-weight: 700;
-            color: var(--heading-color);
-        }
-        #calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-        }
-        .calendar-day-header, .calendar-day {
-            text-align: center;
-            padding: 0.5rem;
-            font-weight: 500;
-        }
-        .calendar-day-header {
-            color: var(--text-color);
-            font-size: 0.9rem;
-        }
-        .calendar-day {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            min-height: 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 0.5rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .calendar-day:hover {
-            background-color: var(--light-primary);
-        }
-        .calendar-day.not-in-month {
-            background-color: var(--background-color);
-            color: #ccc;
-            cursor: default;
-        }
-        .calendar-day .day-number {
-            font-weight: bold;
-            margin-bottom: 0.25rem;
-        }
-        .calendar-day.today .day-number {
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .event-dot {
-            width: 100%;
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            color: white;
-            margin-top: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .event-dot.course { background-color: var(--primary-color); }
-        .event-dot.appointment { background-color: var(--appointment-color); }
-
-        /* --- Inventory Styles --- */
-        .inventory-table th, .inventory-table td {
-            vertical-align: middle;
-            text-align: center;
-            padding: 1rem 0.75rem;
-            border: 1px solid var(--border-color);
-        }
-        .inventory-table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        .inventory-table thead th {
-            background-color: var(--light-primary);
-            color: var(--heading-color);
-            font-weight: 600;
-        }
-        .inventory-table .item-name-cell {
-            text-align: right;
-            font-weight: bold;
-            color: var(--heading-color);
-        }
-        .inventory-table .actions-cell {
-            text-align: left;
-            width: 180px; 
-        }
-        .inventory-table tbody tr {
-            transition: background-color 0.15s ease-in-out;
-        }
-        .inventory-table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-        .inventory-table .actions-cell .btn {
-            border-radius: 50%;
-            width: 38px;
-            height: 38px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            background-color: transparent;
-        }
-        .inventory-table .actions-cell .btn:hover {
-            background-color: var(--border-color);
-        }
-        .balance-ok { color: var(--success-color); }
-        .balance-low { color: var(--warning-color); }
-        .balance-danger { color: var(--danger-color); }
-        .d-none {
-            display: none !important;
-        }
-        .clickable {
-            cursor: pointer;
-        }
-        /* --- Attendance Report Styles (IMPROVED) --- */
-        .attendance-report-table th, .attendance-report-table td {
-            text-align: center;
-            vertical-align: middle;
-            padding: 0.75rem;
-        }
-        .attendance-report-table .student-name {
-            text-align: right;
-            font-weight: bold;
-            min-width: 180px;
-            position: sticky;
-            right: 0;
-            background-color: #fff; /* Changed for better contrast */
-            z-index: 2;
-            border-left: 2px solid var(--primary-color);
-        }
-        .attendance-report-table thead th {
-            position: sticky;
-            top: 0;
-            background-color: var(--light-primary);
-            z-index: 3;
-            font-weight: 600;
-        }
-        .attendance-report-table thead th.student-name {
-            z-index: 4; /* Ensure student name header is on top */
-        }
-        .attendance-report-table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-        .attendance-header-date {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        .delete-date-btn {
-            padding: 0.1rem 0.4rem;
-            line-height: 1;
-            font-size: 0.8rem;
-            opacity: 0.5;
-            transition: opacity 0.2s;
-        }
-        .delete-date-btn:hover {
-            opacity: 1;
-        }
-        /* New styles for clickable attendance badges */
-        .attendance-status-badge {
-            padding: 0.35em 0.65em;
-            font-size: .85em;
-            font-weight: 700;
-            line-height: 1;
-            color: #fff;
-            text-align: center;
-            white-space: nowrap;
-            vertical-align: baseline;
-            border-radius: .375rem;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            user-select: none; /* Prevent text selection on click */
-            min-width: 55px;
-            display: inline-block;
-        }
-        .attendance-status-badge:active {
-            transform: scale(0.95);
-        }
-        .status-present {
-            background-color: var(--success-color);
-        }
-        .status-late {
-            background-color: var(--warning-color);
-        }
-        .status-absent {
-            background-color: var(--danger-color);
-        }
-        
-        /* --- Accordion Styles for Schedule --- */
-        .accordion-button {
-            font-weight: bold;
-            color: var(--heading-color);
-        }
-        .accordion-button:not(.collapsed) {
-            background-color: var(--light-primary);
-            color: var(--primary-color);
-            box-shadow: inset 0 -1px 0 var(--border-color);
-        }
-        .accordion-button:focus {
-            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
-        }
-        .accordion-item {
-            border: 1px solid var(--border-color);
-            border-radius: 12px !important; /* Use important to override bootstrap */
-            overflow: hidden; /* Ensures the radius is applied to children */
-            margin-bottom: 1rem;
-            background-color: transparent;
-        }
-        .accordion-item:first-of-type, .accordion-item:last-of-type {
-             border-radius: 12px !important;
-        }
-        .accordion-body {
-            padding: 1rem;
-            background-color: #fdfdff;
-        }
-        .swal2-select {
-            margin: 1em auto;
-            display: block;
-            width: 80%;
-            padding: .375rem 2.25rem .375rem .75rem;
-            font-size: 1rem;
-            font-weight: 400;
-            line-height: 1.5;
-            color: var(--bs-body-color);
-            background-color: var(--bs-body-bg);
-            background-image: var(--bs-form-select-bg-icon,url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"));
-            background-repeat: no-repeat;
-            background-position: right .75rem center;
-            background-size: 16px 12px;
-            border: 1px solid var(--bs-border-color);
-            border-radius: .375rem;
-            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-        }
-        
         /* --- Improved Search Bar Styles --- */
         .search-input-group {
-            border-radius: 0.75rem; /* 12px */
+            border-radius: 0.75rem;
             border: 1px solid var(--border-color);
             transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
-            overflow: hidden; /* To apply border-radius to children */
+            overflow: hidden;
             display: flex;
         }
         .search-input-group:focus-within {
@@ -390,7 +140,62 @@
             background-color: var(--light-primary);
             color: var(--primary-color);
         }
+        
+        /* --- Financial Card Styles --- */
+        .financial-card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .financial-card-header {
+            background-color: var(--light-primary);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .financial-card-body {
+            padding: 1.5rem;
+        }
+        .financial-summary .stat-item {
+            text-align: center;
+        }
+        .stat-item .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            display: block;
+        }
+        .stat-item .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+        .stat-value.revenue { color: var(--financial-green); }
+        .stat-value.expenses { color: var(--financial-red); }
+        .stat-value.profit { color: var(--financial-blue); }
 
+        .profit-distribution {
+            background-color: var(--background-color);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .expense-item {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .expense-item:last-child {
+            border-bottom: none;
+        }
+
+        /* --- Other Styles --- */
+        .swal2-select {
+            margin: 1em auto; display: block; width: 80%;
+            padding: .375rem 2.25rem .375rem .75rem;
+            font-size: 1rem; font-weight: 400; line-height: 1.5;
+            color: var(--bs-body-color); background-color: var(--bs-body-bg);
+            background-image: var(--bs-form-select-bg-icon,url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"));
+            background-repeat: no-repeat; background-position: right .75rem center;
+            background-size: 16px 12px; border: 1px solid var(--bs-border-color);
+            border-radius: .375rem;
+        }
     </style>
 </head>
 <body>
@@ -423,6 +228,7 @@
                 <li class="nav-item" role="presentation"><button class="nav-link" id="trainees-tab" data-bs-toggle="tab" data-bs-target="#trainees-panel" type="button"><i class="fas fa-user-graduate me-2"></i>المتدربين</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="trainers-tab" data-bs-toggle="tab" data-bs-target="#trainers-panel" type="button"><i class="fas fa-chalkboard-teacher me-2"></i>المدربين</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-panel" type="button"><i class="fas fa-calendar-alt me-2"></i>الجدولة</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="financials-tab" data-bs-toggle="tab" data-bs-target="#financials-panel" type="button"><i class="fas fa-chart-line me-2"></i>المالية</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance-panel" type="button"><i class="fas fa-user-check me-2"></i>التفقد</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar-panel" type="button"><i class="fas fa-calendar-week me-2"></i>التقويم</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory-panel" type="button"><i class="fas fa-boxes-stacked me-2"></i>الجرد</button></li>
@@ -442,6 +248,12 @@
                         <button class="btn btn-outline-primary" type="button" id="schedule-search-btn"><i class="fas fa-search"></i></button>
                     </div>
                     <div id="schedule-results" class="mt-4"></div>
+                </div>
+                <div class="tab-pane fade p-3" id="financials-panel" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="m-0">التقارير المالية للدورات</h4>
+                    </div>
+                    <div id="financials-content"></div>
                 </div>
                  <div class="tab-pane fade p-3" id="attendance-panel" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -477,6 +289,7 @@
         </main>
     </div>
 
+    <!-- Modals -->
     <div class="modal fade" id="traineeModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="traineeForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="traineeModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">البيانات الشخصية</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-6"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-6"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-6"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div></div><h6 class="form-section-title">الملاحظات</h6><div class="col-12"><label class="form-label" for="trainee-notes">ملاحظات إدارية</label><textarea id="trainee-notes" name="notes" class="form-control" rows="3" placeholder="...أضف ملاحظات حول المتدرب هنا"></textarea></div><h6 class="form-section-title">تسجيل الكورسات</h6><div class="position-relative"><label class="form-label">ابحث عن كورس لإضافته</label><input type="text" id="course-search-input" class="form-control" placeholder="...ابدأ بكتابة اسم الكورس"><div id="course-search-results-dropdown" class="search-results-dropdown d-none"></div></div><div id="selected-courses-list" class="mt-2"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
     <div class="modal fade" id="trainerModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="trainerForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="trainerModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="form-section-title">البيانات الشخصية</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">الأسم الثلاثي</label><input type="text" name="full_name" class="form-control" required></div><div class="col-md-6"><label class="form-label">رقم الهاتف</label><input type="text" name="phone" class="form-control"></div><div class="col-12"><label class="form-label">السكن</label><input type="text" name="address" class="form-control"></div><div class="col-md-4"><label class="form-label">الرقم الوطني</label><input type="text" name="national_id" class="form-control"></div><div class="col-md-4"><label class="form-label">التولد</label><input type="date" name="dob" class="form-control"></div><div class="col-md-4"><label class="form-label">أسم الأم</label><input type="text" name="mother_name" class="form-control"></div><div class="col-md-6"><label class="form-label">التحصيل العلمي</label><input type="text" name="education" class="form-control"></div><div class="col-md-6"><label class="form-label">الاختصاص التدريبي</label><input type="text" name="specialty" class="form-control"></div><div class="col-12"><label class="form-label">رفع السيرة الذاتية (PDF)</label><input type="file" name="cv_file" class="form-control" accept=".pdf"><small id="currentCv" class="form-text text-primary"></small></div></div><h6 class="form-section-title">بيانات التعاقد</h6><div class="row g-3"><div class="col-md-6"><label class="form-label">تاريخ التعاقد</label><input type="date" name="contract_start_date" class="form-control"></div><div class="col-md-6"><label class="form-label">تاريخ انتهاء العقد</label><input type="date" name="contract_end_date" class="form-control"></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary px-4">حفظ</button></div></form></div></div></div>
     <div class="modal fade" id="scheduleModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form id="scheduleForm"><input type="hidden" name="id"><div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
@@ -547,6 +360,7 @@
     <div class="modal fade" id="inventoryDetailModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="inventoryDetailModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="inventoryDetailModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
     <div class="modal fade" id="courseDetailModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="courseDetailModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="courseDetailModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
     <div class="modal fade" id="attendanceReportModal" tabindex="-1"><div class="modal-dialog modal-fullscreen"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="attendanceReportModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="attendanceReportModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="button" id="saveAttendanceReportBtn" class="btn btn-primary">حفظ التعديلات</button></div></div></div></div>
+    <div class="modal fade" id="expenseModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="expenseForm"><input type="hidden" name="id"><input type="hidden" name="schedule_id"><div class="modal-header"><h5 class="modal-title" id="expenseModalTitle">إضافة مصروف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">الوصف</label><input type="text" name="description" class="form-control" required></div><div class="mb-3"><label class="form-label">المبلغ</label><input type="number" name="amount" class="form-control" required min="0" step="any"></div><div class="mb-3"><label class="form-label">تاريخ الصرف</label><input type="date" name="expense_date" class="form-control" required></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -556,10 +370,7 @@
         // =================================================================================
         // !! تنبيه هام: تأكد من تحديث قاعدة البيانات !!
         // =================================================================================
-        // إذا لم تكن قد قمت بذلك بالفعل، يجب تنفيذ التغييرات التالية على قاعدة بيانات Supabase:
-        // 1. إنشاء جدول `course_categories` (بأعمدة id, created_at, name).
-        // 2. تعديل جدول `courses`: حذف عمود `category` النصي، وإضافة عمود `category_id` (uuid)،
-        //    وربطه كـ Foreign Key بجدول `course_categories`.
+        // يجب تنفيذ سكربت SQL لتحديث الجداول قبل تشغيل هذا الكود.
         // =================================================================================
         const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpndmlieGljbXlsd3ZtZXVia2RjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODkyODksImV4cCI6MjA2NjQ2NTI4OX0.xq50DkxFGJrrPQ1VWDob6MMaZW4roNcJNY0xjRw5w_0';
@@ -654,10 +465,8 @@
         let scheduleSelectedTrainees = new Map();
         let calendarDate = new Date();
         let lastOpenedDetail = { itemId: null, itemName: null };
-        let transactionModalInstance;
-        let detailModalInstance;
-        let attendanceReportModal;
-        let currentScheduleCourse = null; // Holds the selected course object in the schedule modal
+        let transactionModalInstance, detailModalInstance, attendanceReportModal, expenseModal;
+        let currentScheduleCourse = null;
 
 
         async function fetchTrainers(searchTerm = '') {
@@ -1355,13 +1164,21 @@
                             <div class="card-body p-4">
                                 <h5 class="card-title text-center">إدارة الكورسات</h5>
                                 <form id="addCourseForm" class="row g-2 mt-3 mb-3 align-items-end">
-                                    <div class="col-sm-6">
+                                    <div class="col-sm-12 mb-2">
                                         <label for="newCourseName" class="form-label">اسم الكورس</label>
                                         <input type="text" id="newCourseName" name="name" class="form-control" required>
                                     </div>
-                                    <div class="col-sm-6">
+                                    <div class="col-sm-12 mb-2">
                                         <label for="newCourseCategory" class="form-label">التصنيف</label>
                                         <select id="newCourseCategory" name="category_id" class="form-select" required></select>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label for="newCoursePrice" class="form-label">السعر للطالب</label>
+                                        <input type="number" id="newCoursePrice" name="price_per_student" class="form-control" required min="0" value="0">
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label for="newCoursePercentage" class="form-label">نسبة المدرب (%)</label>
+                                        <input type="number" id="newCoursePercentage" name="trainer_percentage" class="form-control" required min="0" max="100" value="0">
                                     </div>
                                     <div class="col-12 mt-3">
                                         <button type="submit" class="btn btn-primary w-100">إضافة كورس</button>
@@ -1411,7 +1228,7 @@
                             <small class="d-block text-muted">${c.course_categories ? c.course_categories.name : 'بدون تصنيف'}</small>
                         </div>
                         <div>
-                            <button class="btn btn-sm btn-light py-1 px-2" onclick="openEditCourseModal('${c.id}', '${c.name}', '${c.category_id || ''}')" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
+                            <button class="btn btn-sm btn-light py-1 px-2" onclick="openEditCourseModal('${c.id}')" title="تعديل"><i class="fas fa-edit text-primary"></i></button>
                             <button class="btn btn-sm btn-light py-1 px-2" onclick="handleDeleteCourse('${c.id}', '${c.name}')" title="حذف"><i class="fas fa-trash text-danger"></i></button>
                         </div>
                     </li>
@@ -1491,15 +1308,14 @@
             event.preventDefault();
             const form = event.target;
             const formData = new FormData(form);
-            const courseName = formData.get('name');
-            const categoryId = formData.get('category_id');
+            const data = Object.fromEntries(formData.entries());
 
-            if (!categoryId) {
+            if (!data.category_id) {
                 Swal.fire('تنبيه', 'الرجاء اختيار تصنيف للكورس.', 'warning');
                 return;
             }
 
-            const { error } = await supabaseClient.from('courses').insert([{ name: courseName, category_id: categoryId }]);
+            const { error } = await supabaseClient.from('courses').insert([data]);
             if (error) {
                 Swal.fire('خطأ!', `لم تتم الإضافة: ${error.message}`, 'error');
             } else {
@@ -1509,16 +1325,21 @@
             }
         }
         
-        async function openEditCourseModal(courseId, currentName, currentCategoryId) {
+        async function openEditCourseModal(courseId) {
+            const course = allCoursesCache.find(c => c.id === courseId);
+            if (!course) return;
+
             const categoryOptions = allCategoriesCache.map(cat => 
-                `<option value="${cat.id}" ${cat.id === currentCategoryId ? 'selected' : ''}>${cat.name}</option>`
+                `<option value="${cat.id}" ${cat.id === course.category_id ? 'selected' : ''}>${cat.name}</option>`
             ).join('');
 
             const { value: formValues } = await Swal.fire({
                 title: 'تعديل الكورس',
                 html:
-                    `<input id="swal-course-name" class="swal2-input" placeholder="اسم الكورس" value="${currentName}">` +
-                    `<select id="swal-course-category" class="swal2-select">${categoryOptions}</select>`,
+                    `<input id="swal-course-name" class="swal2-input" placeholder="اسم الكورس" value="${course.name}">` +
+                    `<select id="swal-course-category" class="swal2-select">${categoryOptions}</select>` +
+                    `<input id="swal-course-price" type="number" class="swal2-input" placeholder="السعر" value="${course.price_per_student || 0}">` +
+                    `<input id="swal-course-percentage" type="number" class="swal2-input" placeholder="نسبة المدرب %" value="${course.trainer_percentage || 0}">`,
                 focusConfirm: false,
                 showCancelButton: true,
                 confirmButtonText: 'حفظ',
@@ -1526,7 +1347,9 @@
                 preConfirm: () => {
                     return {
                         name: document.getElementById('swal-course-name').value,
-                        category_id: document.getElementById('swal-course-category').value
+                        category_id: document.getElementById('swal-course-category').value,
+                        price_per_student: parseFloat(document.getElementById('swal-course-price').value) || 0,
+                        trainer_percentage: parseInt(document.getElementById('swal-course-percentage').value) || 0
                     }
                 }
             });
@@ -1565,9 +1388,8 @@
         // --- Schedule Modal Course Selection & Editing ---
         async function editCourseFromScheduleModal() {
             if (!currentScheduleCourse) return;
-            const wasUpdated = await openEditCourseModal(currentScheduleCourse.id, currentScheduleCourse.name, currentScheduleCourse.category_id);
+            const wasUpdated = await openEditCourseModal(currentScheduleCourse.id);
             if (wasUpdated) {
-                // The cache is now updated, re-render the selection display
                 selectCourseForSchedule(currentScheduleCourse.id);
             }
         }
@@ -2447,12 +2269,12 @@
             }
         }
 
-
         // --- APP INITIALIZATION ---
         function initializeApp() {
             transactionModalInstance = new bootstrap.Modal(document.getElementById('inventoryTransactionModal'));
             detailModalInstance = new bootstrap.Modal(document.getElementById('inventoryDetailModal'));
             attendanceReportModal = new bootstrap.Modal(document.getElementById('attendanceReportModal'));
+            expenseModal = new bootstrap.Modal(document.getElementById('expenseModal'));
 
             fetchSummaryData();
             fetchTrainees();
@@ -2497,6 +2319,7 @@
             document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceFormSubmit);
             document.getElementById('appointmentForm').addEventListener('submit', handleAppointmentFormSubmit);
             document.getElementById('inventoryTransactionForm').addEventListener('submit', handleInventoryTransactionSubmit);
+            document.getElementById('expenseForm').addEventListener('submit', handleExpenseFormSubmit);
             
             document.getElementById('course-search-input').addEventListener('keyup', (e) => renderCourseSearchResults(e.target.value));
             document.getElementById('schedule-trainee-search-input').addEventListener('keyup', (e) => renderScheduleTraineeSearchResults(e.target.value));
@@ -2518,6 +2341,7 @@
             });
             
             document.getElementById('attendance-tab').addEventListener('shown.bs.tab', fetchCoursesForAttendance);
+            document.getElementById('financials-tab').addEventListener('shown.bs.tab', fetchFinancials);
 
             const transactionModalEl = document.getElementById('inventoryTransactionModal');
             transactionModalEl.addEventListener('hidden.bs.modal', () => {
