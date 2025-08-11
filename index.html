@@ -184,6 +184,90 @@
         .expense-item:last-child {
             border-bottom: none;
         }
+        
+        /* --- Calendar Styles --- */
+        #calendar-container {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+        }
+        #calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        #month-year-display {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--heading-color);
+        }
+        #calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 500;
+            color: var(--text-color);
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 5px;
+        }
+        .calendar-day {
+            border: 1px solid var(--border-color);
+            min-height: 120px;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .calendar-day:hover {
+            background-color: var(--light-primary);
+        }
+        .calendar-day.not-in-month {
+            background-color: var(--background-color);
+            cursor: default;
+        }
+        .calendar-day .day-number {
+            font-weight: 500;
+            color: var(--heading-color);
+        }
+        .calendar-day.today .day-number {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .events-container {
+            margin-top: 0.5rem;
+            flex-grow: 1;
+        }
+        .event-dot {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 1rem;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .event-dot.course {
+            background-color: #DBEAFE;
+            color: #1E40AF;
+        }
+        .event-dot.appointment {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
 
         /* --- Other Styles --- */
         .swal2-select, .swal2-input {
