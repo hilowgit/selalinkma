@@ -362,6 +362,46 @@
     <div class="modal fade" id="courseDetailModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="courseDetailModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="courseDetailModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
     <div class="modal fade" id="attendanceReportModal" tabindex="-1"><div class="modal-dialog modal-fullscreen"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="attendanceReportModalTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="attendanceReportModalBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="button" id="saveAttendanceReportBtn" class="btn btn-primary">حفظ التعديلات</button></div></div></div></div>
     <div class="modal fade" id="expenseModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="expenseForm"><input type="hidden" name="id"><input type="hidden" name="schedule_id"><div class="modal-header"><h5 class="modal-title" id="expenseModalTitle">إضافة مصروف</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">الوصف</label><input type="text" name="description" class="form-control" required></div><div class="mb-3"><label class="form-label">المبلغ</label><input type="number" name="amount" class="form-control" required min="0" step="any"></div><div class="mb-3"><label class="form-label">تاريخ الصرف</label><input type="date" name="expense_date" class="form-control" required></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
+    
+    <!-- ================================================================================= -->
+    <!-- === NEW: Course Edit Modal === -->
+    <!-- ================================================================================= -->
+    <div class="modal fade" id="courseEditModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="courseEditForm">
+                    <input type="hidden" name="id">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تعديل الكورس</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="edit-course-name" class="form-label">اسم الكورس</label>
+                            <input type="text" id="edit-course-name" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-course-category" class="form-label">التصنيف</label>
+                            <select id="edit-course-category" name="category_id" class="form-select" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-course-price" class="form-label">السعر للطالب</label>
+                            <input type="number" id="edit-course-price" name="price_per_student" class="form-control" required min="0" step="any">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-course-percentage" class="form-label">نسبة المدرب (%)</label>
+                            <input type="number" id="edit-course-percentage" name="trainer_percentage" class="form-control" required min="0" max="100" step="1">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -466,7 +506,7 @@
         let scheduleSelectedTrainees = new Map();
         let calendarDate = new Date();
         let lastOpenedDetail = { itemId: null, itemName: null };
-        let transactionModalInstance, detailModalInstance, attendanceReportModal, expenseModal;
+        let transactionModalInstance, detailModalInstance, attendanceReportModal, expenseModal, courseEditModal;
         let currentScheduleCourse = null;
 
 
@@ -1311,7 +1351,7 @@
             }
         }
 
-        async function handleDeleteCategory(id, name) {
+        function handleDeleteCategory(id, name) {
             confirmDeletion(async () => {
                 const { error } = await supabaseClient.from('course_categories').delete().eq('id', id);
                 if (error) {
@@ -1344,62 +1384,66 @@
             }
         }
         
+        // =================================================================================
+        // === NEW/REWRITTEN: Course Edit Functions ===
+        // =================================================================================
         async function openEditCourseModal(courseId) {
             const course = allCoursesCache.find(c => c.id === courseId);
-            if (!course) return;
+            if (!course) {
+                Swal.fire('خطأ!', 'لم يتم العثور على بيانات الكورس.', 'error');
+                return;
+            }
 
-            const categoryOptions = allCategoriesCache.map(cat => 
-                `<option value="${cat.id}" ${cat.id === course.category_id ? 'selected' : ''}>${cat.name}</option>`
-            ).join('');
+            const form = document.getElementById('courseEditForm');
+            form.reset();
 
-            const { value: formValues } = await Swal.fire({
-                title: 'تعديل الكورس',
-                html:
-                    `<div style="text-align: right; padding: 0 1em;">` +
-                    `<label for="swal-course-name" class="swal2-label">اسم الكورس</label>` +
-                    `<input id="swal-course-name" class="swal2-input" value="${course.name}">` +
-                    
-                    `<label for="swal-course-category" class="swal2-label">التصنيف</label>` +
-                    `<select id="swal-course-category" class="swal2-select">${categoryOptions}</select>` +
-                    
-                    `<label for="swal-course-price" class="swal2-label">السعر للطالب</label>` +
-                    `<input id="swal-course-price" type="number" step="any" class="swal2-input" value="${course.price_per_student || 0}">` + // <-- CORRECTED
-                    
-                    `<label for="swal-course-percentage" class="swal2-label">نسبة المدرب (%)</label>` +
-                    `<input id="swal-course-percentage" type="number" step="1" class="swal2-input" value="${course.trainer_percentage || 0}">` + // <-- CORRECTED
-                    `</div>`,
-                focusConfirm: false,
-                showCancelButton: true,
-                confirmButtonText: 'حفظ',
-                cancelButtonText: 'إلغاء',
-                preConfirm: () => {
-                    return {
-                        name: document.getElementById('swal-course-name').value,
-                        category_id: document.getElementById('swal-course-category').value,
-                        price_per_student: parseFloat(document.getElementById('swal-course-price').value) || 0,
-                        trainer_percentage: parseInt(document.getElementById('swal-course-percentage').value) || 0
-                    }
-                }
-            });
+            // Populate the form fields
+            form.querySelector('[name="id"]').value = course.id;
+            form.querySelector('[name="name"]').value = course.name;
+            form.querySelector('[name="price_per_student"]').value = course.price_per_student || 0;
+            form.querySelector('[name="trainer_percentage"]').value = course.trainer_percentage || 0;
+            
+            // Populate the category select dropdown and set the correct selection
+            populateCategorySelect('edit-course-category', course.category_id);
 
-            if (formValues) {
-                if (!formValues.name || !formValues.category_id) {
-                    Swal.fire('خطأ', 'يجب إدخال اسم واختيار تصنيف.', 'error');
-                    return false;
-                }
-                const { error } = await supabaseClient.from('courses').update(formValues).eq('id', courseId);
-                if (error) {
-                    Swal.fire('خطأ!', `لم يتم التحديث: ${error.message}`, 'error');
-                    return false;
-                } else {
-                    await Swal.fire('تم!', 'تم تحديث الكورس بنجاح.', 'success');
-                    await fetchSummaryData();
-                    await fetchSchedules();
-                    return true;
+            // Show the modal
+            courseEditModal.show();
+        }
+
+        async function handleCourseEditFormSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const courseData = Object.fromEntries(formData.entries());
+            const courseId = courseData.id;
+            delete courseData.id;
+
+            // Convert to correct types
+            courseData.price_per_student = parseFloat(courseData.price_per_student) || 0;
+            courseData.trainer_percentage = parseInt(courseData.trainer_percentage) || 0;
+            
+            if (!courseData.name || !courseData.category_id) {
+                Swal.fire('خطأ', 'يجب إدخال اسم واختيار تصنيف.', 'error');
+                return;
+            }
+
+            const { error } = await supabaseClient.from('courses').update(courseData).eq('id', courseId);
+
+            if (error) {
+                Swal.fire('خطأ!', `لم يتم التحديث: ${error.message}`, 'error');
+            } else {
+                await Swal.fire('تم!', 'تم تحديث الكورس بنجاح.', 'success');
+                courseEditModal.hide();
+                await fetchSummaryData();
+                await fetchSchedules();
+
+                // Refresh the schedule modal display if it was the origin of the edit
+                if (currentScheduleCourse) {
+                    selectCourseForSchedule(currentScheduleCourse.id); 
                 }
             }
-            return false;
         }
+
 
         function handleDeleteCourse(id, name) {
             confirmDeletion(async () => {
@@ -1416,10 +1460,8 @@
         // --- Schedule Modal Course Selection & Editing ---
         async function editCourseFromScheduleModal() {
             if (!currentScheduleCourse) return;
-            const wasUpdated = await openEditCourseModal(currentScheduleCourse.id);
-            if (wasUpdated) {
-                selectCourseForSchedule(currentScheduleCourse.id);
-            }
+            // This now opens the Bootstrap modal
+            openEditCourseModal(currentScheduleCourse.id);
         }
 
         function renderScheduleCourseSearchResults(searchTerm) {
@@ -1443,6 +1485,7 @@
         }
 
         function selectCourseForSchedule(id) {
+            // Find the potentially updated course from the cache
             const course = allCoursesCache.find(c => c.id === id);
             if (!course) return;
 
@@ -2308,6 +2351,7 @@
             detailModalInstance = new bootstrap.Modal(document.getElementById('inventoryDetailModal'));
             attendanceReportModal = new bootstrap.Modal(document.getElementById('attendanceReportModal'));
             expenseModal = new bootstrap.Modal(document.getElementById('expenseModal'));
+            courseEditModal = new bootstrap.Modal(document.getElementById('courseEditModal'));
 
             fetchSummaryData();
             fetchTrainees();
@@ -2352,6 +2396,7 @@
             document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceFormSubmit);
             document.getElementById('appointmentForm').addEventListener('submit', handleAppointmentFormSubmit);
             document.getElementById('inventoryTransactionForm').addEventListener('submit', handleInventoryTransactionSubmit);
+            document.getElementById('courseEditForm').addEventListener('submit', handleCourseEditFormSubmit);
             // The expense form submit listener was missing, adding it back.
             // document.getElementById('expenseForm').addEventListener('submit', handleExpenseFormSubmit);
             
