@@ -1363,10 +1363,10 @@
                     `<select id="swal-course-category" class="swal2-select">${categoryOptions}</select>` +
                     
                     `<label for="swal-course-price" class="swal2-label">السعر للطالب</label>` +
-                    `<input id="swal-course-price" type="text" inputmode="decimal" class="swal2-input" value="${course.price_per_student || 0}">` +
+                    `<input id="swal-course-price" type="number" step="any" class="swal2-input" value="${course.price_per_student || 0}">` + // <-- CORRECTED
                     
                     `<label for="swal-course-percentage" class="swal2-label">نسبة المدرب (%)</label>` +
-                    `<input id="swal-course-percentage" type="text" inputmode="numeric" pattern="[0-9]*" class="swal2-input" value="${course.trainer_percentage || 0}">` +
+                    `<input id="swal-course-percentage" type="number" step="1" class="swal2-input" value="${course.trainer_percentage || 0}">` + // <-- CORRECTED
                     `</div>`,
                 focusConfirm: false,
                 showCancelButton: true,
