@@ -1,5 +1,5 @@
 // =================================================================================
-//  Sila Training Center - Admin Dashboard Logic (Secure Version)
+//  Sila Training Center - Admin Dashboard Logic (Secure Version with Simple Inventory Password)
 // =================================================================================
 
 const SUPABASE_URL = 'https://jgvibxicmylwvmeubkdc.supabase.co';
@@ -28,6 +28,7 @@ let scheduleSelectedTrainees = new Map();
 let calendarDate = new Date();
 let lastOpenedDetail = { itemId: null, itemName: null };
 let currentScheduleCourse = null;
+let inventoryAccessGranted = false; // State for inventory access
 
 // Modal Instances
 let traineeModal, trainerModal, scheduleModal, attendanceModal, confirmModal,
@@ -53,6 +54,7 @@ loginForm.addEventListener('submit', async (e) => {
 
 logoutBtn.addEventListener('click', async () => {
     await supabaseClient.auth.signOut();
+    inventoryAccessGranted = false; // Reset inventory access on logout
     checkUser();
 });
 
@@ -1348,7 +1350,8 @@ function initializeApp() {
     cacheAllTrainees();
     cacheAllTrainers();
     renderCalendar();
-    fetchInventoryData();
+    // Do not fetch inventory data initially, it's behind a password
+    // fetchInventoryData();
     cacheInventoryItems();
 
     // Setup event listeners
@@ -1386,6 +1389,50 @@ function setupEventListeners() {
     document.getElementById('next-month-btn').addEventListener('click', () => { calendarDate.setMonth(calendarDate.getMonth() + 1); renderCalendar(); });
     document.getElementById('attendance-tab').addEventListener('shown.bs.tab', fetchCoursesForAttendance);
     document.getElementById('confirmDeleteBtn').addEventListener('click', () => { if (deleteFunction) deleteFunction(); confirmModal.hide(); });
+    
+    // Inventory Tab Password Protection
+    const inventoryTab = document.getElementById('inventory-tab');
+    inventoryTab.addEventListener('show.bs.tab', async function (event) {
+        if (inventoryAccessGranted) {
+            fetchInventoryData(); // Fetch data if access is already granted
+            return;
+        }
+
+        event.preventDefault(); // Prevent tab from showing
+
+        const { value: password } = await Swal.fire({
+            title: 'كلمة مرور قسم الجرد',
+            input: 'password',
+            inputLabel: 'الرجاء إدخال كلمة المرور للوصول إلى هذا القسم',
+            inputPlaceholder: 'أدخل كلمة المرور',
+            showCancelButton: true,
+            confirmButtonText: 'دخول',
+            cancelButtonText: 'إلغاء',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'يجب إدخال كلمة المرور!'
+                }
+            }
+        });
+
+        // =========================================================================
+        //  تنبيه: كلمة المرور هنا ظاهرة في الكود. هذه الطريقة غير آمنة.
+        //  يمكنك تغيير كلمة المرور "sila2024" إلى أي شيء تريده.
+        // =========================================================================
+        if (password === 'sila2024') {
+            inventoryAccessGranted = true;
+            fetchInventoryData(); // Fetch data now that access is granted
+            const tabTrigger = new bootstrap.Tab(inventoryTab);
+            tabTrigger.show();
+        } else if (password) {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطأ',
+                text: 'كلمة المرور غير صحيحة.',
+            });
+        }
+    });
+
     const transactionModalEl = document.getElementById('inventoryTransactionModal');
     transactionModalEl.addEventListener('hidden.bs.modal', () => {
         if (!transactionModalEl._transactionWasSaved && lastOpenedDetail.itemId) {
