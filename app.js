@@ -1417,9 +1417,9 @@ function setupEventListeners() {
 
         // =========================================================================
         //  تنبيه: كلمة المرور هنا ظاهرة في الكود. هذه الطريقة غير آمنة.
-        //  يمكنك تغيير كلمة المرور "sila2024" إلى أي شيء تريده.
+        //  يمكنك تغيير كلمة المرور "lama2sela" إلى أي شيء تريده.
         // =========================================================================
-        if (password === 'sila2024') {
+        if (password === 'lama2sela') {
             inventoryAccessGranted = true;
             fetchInventoryData(); // Fetch data now that access is granted
             const tabTrigger = new bootstrap.Tab(inventoryTab);
